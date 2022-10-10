@@ -1,2 +1,2 @@
 # GamesAndComplexity
-Using 2D Grid's with Agent Based Modelling for RPS
+Using 2D Grids with Agent Based Modelling for RPS
