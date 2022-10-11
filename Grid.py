@@ -4,6 +4,14 @@ from Agent import Agent;
 
 
 class Grid:
+
+    #Initialise Instance Of Grid:
+    # Rock = Red = -1
+    # Paper = Green = 0
+    # Scissors = Blue = 1
+    # List of Objects (Agent Instances)
+    #Dimension is Width of Grid
+
     def __init__(self, Dimension):
         self.KeyMapping = {"R": -1, "P": 0, "S": 1}
         self.Dimension = Dimension
@@ -11,6 +19,8 @@ class Grid:
         for i in range(0,self.Dimension**2):
             AgentList.append(Agent(i))
         self.Agents = AgentList
+
+    #Converter Purely for Visuals of Grid
 
     def ListToArray(self):
         Array = []
@@ -22,15 +32,19 @@ class Grid:
             Array.append(ArrayFile)
         return Array
 
+    #Visualises Grid
+
     def VisualiseGrid(self):
         colormap = colors.ListedColormap(["red", "green", "blue"])
         plt.figure(figsize=(5, 5))
         plt.imshow(self.ListToArray(), cmap=colormap)
         plt.show()
 
-
     def GetAgents(self):
         return self.Agents
+
+
+    # Checks Winner of Invididual Round
 
     def CheckWinner(self,IndexA,IndexB):
         if self.Agents[IndexA].GetMove() == "P":
@@ -55,6 +69,12 @@ class Grid:
             if self.Agents[IndexB].GetMove() == "S":
                 return 0
 
+
+    # Iterates through board finding total score from non-diagonal neighbours
+    # If statements are to check different edge cases, now made to have equal opponents to central agents
+    # Scores now encoded into individual Agents but for debugging / storage also outputs list of...
+    # ...scores in same order as agents in self.Agents
+
     def CheckAllWinners(self):
 
         ScoreList = []
@@ -75,71 +95,72 @@ class Grid:
                 Score = 0
                 for Opponent in Opponents:
                     Score += self.CheckWinner(Index, Opponent)
-                return Score
 
             elif Index == TopRightCorner:
-                Opponents = [1, RightSide[0], TopRightCorner, BottomLeftCorner]
+                Opponents = [Index - 1, RightSide[0], TopLeftCorner, BottomRightCorner]
                 Score = 0
                 for Opponent in Opponents:
                     Score += self.CheckWinner(Index, Opponent)
-                return Score
 
             elif Index == BottomLeftCorner:
-                Opponents = [1, LeftSide[-1], BottomRightCorner, TopLeftCorner]
+                Opponents = [Index+1, LeftSide[-1], BottomRightCorner, TopLeftCorner]
                 Score = 0
                 for Opponent in Opponents:
                     Score += self.CheckWinner(Index, Opponent)
-                return Score
+
 
             elif Index == BottomRightCorner:
-                Opponents = [1, RightSide[-1], BottomLeftCorner, TopRightCorner]
+                Opponents = [Index-1, RightSide[-1], BottomLeftCorner, TopRightCorner]
                 Score = 0
                 for Opponent in Opponents:
                     Score += self.CheckWinner(Index, Opponent)
-                return Score
 
             elif Index in TopSide:
                 Score = 0
                 Opponents = [Index-1, Index+self.Dimension, Index+1, Index + (self.Dimension**2-self.Dimension)]
                 for Opponent in Opponents:
                     Score += self.CheckWinner(Index, Opponent)
-                return Score
 
             elif Index in BottomSide:
                 Score = 0
                 Opponents = [Index - 1, Index - self.Dimension, Index + 1, Index - (self.Dimension ** 2 - self.Dimension)]
                 for Opponent in Opponents:
                     Score += self.CheckWinner(Index, Opponent)
-                return Score
 
             elif Index in LeftSide:
                 Score = 0
                 Opponents = [Index - 1 + self.Dimension, Index - self.Dimension, Index + 1, Index + self.Dimension]
                 for Opponent in Opponents:
                     Score += self.CheckWinner(Index, Opponent)
-                return Score
+
 
             elif Index in RightSide:
                 Score = 0
                 Opponents = [Index - 1, Index - self.Dimension, Index - self.Dimension + 1, Index + self.Dimension]
                 for Opponent in Opponents:
                     Score += self.CheckWinner(Index, Opponent)
-                return Score
+
 
             else:
                 Score = 0
                 Opponents = [Index - 1, Index - self.Dimension, Index + 1, Index + self.Dimension]
                 for Opponent in Opponents:
                     Score += self.CheckWinner(Index, Opponent)
-                return Score
 
+            self.Agents[Index].ChangeScore(Score)
             ScoreList.append(Score)
 
-        return self.Dimension
+        return ScoreList
 
 
 
-x=Grid(3)
-print(x.Dimension)
-x.VisualiseGrid()
-print(x.CheckAllWinners())
+
+
+#Example Script for debugging -> sum of score list should be 0 (net zero game)
+#P.S. comment out before running Iterator
+
+# x=Grid(3)
+# print(x.Dimension)
+# x.VisualiseGrid()
+# print(x.CheckAllWinners())
+# print(sum(x.CheckAllWinners()))
