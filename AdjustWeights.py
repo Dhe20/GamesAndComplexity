@@ -11,7 +11,7 @@ class AdjustWeights:
         '''
         Scores - (int) current score of each agent
         Probs - (list)current probability to play O,I,X
-        Status - (str: "W" , "L") based on if they just won or lost 
+        Status - (str: "W" , "L", "T") based on if they just won lost or tied
         JustPlayed - (Str: "O" ,"I" , "X") what was just played 
         instance to be initiated at every new iteration timestep
         '''
@@ -35,7 +35,7 @@ class AdjustWeights:
             raise ValueError("illegal status!")
 
     def CheckJustPlayed(self):
-        if self.Status != "W" or self.Status != "L":
+        if self.JustPlayed != "O" or self.JustPlayed != "I" or self.JustPlayed != "X":
             raise ValueError("illegal status!")
 
     def CheckAdj(self, Adjustment):
@@ -62,9 +62,13 @@ class AdjustWeights:
         "LO": [0,1,2, "-"],
         "LI": [1,2,0, "-"],
         "LX": [2,0,1, "-"],
+        "T": [None,None,None,None], #there must be a better way lol
         }
         StatRepr = self.Status+self.JustPlayed
-        return Dict.get(StatRepr)
+        #special case for T
+        if StatRepr[-1] == "T":
+            return Dict.get("T")
+        return Dict.get(StatRepr) #who needs else: return 
 
 class Exponential(AdjustWeights):
     def __init__(self, Probs, Score, Status, JustPlayed):
@@ -88,10 +92,14 @@ class Exponential(AdjustWeights):
         self.CheckProbs()
         return self.Probs
 
-
+'''
 #debugging
 score = 3
 probs = [0.3,0.4,0.3]
 test = Exponential(probs, score, "W","O")
 test.AdjustWeights()
 print()
+#should do nothing
+test = Exponential(probs, score, "W","T")
+test.AdjustWeights()
+'''
