@@ -29,7 +29,7 @@ class Iterator(Grid):
     # Use scores to adjust each individual Agent's distribution
     def UpdateAllDists(self):
         for i in range(0, len(self.Agents)):
-            Score = self.Agents[i].GetScore()
+            RecentScore = self.Agents[i].GetScore()
             RecentMove = self.Agents[i].GetMove()
 
             ### CREATE FUNCTION HERE
