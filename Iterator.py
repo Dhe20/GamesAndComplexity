@@ -33,6 +33,7 @@ class Iterator(Grid):
             TotalScore = self.Agents[i].GetTotalScore()
             RecentMove = self.Agents[i].GetMove()
 
+
             ### CREATE FUNCTION HERE
             # Some Function using Score and recent move to change distribution
 
