@@ -10,7 +10,8 @@ class Agent:
         self.Location = index
         self.ProbabilityDist = [0.34, 0.33, 0.33]
         self.Move = choices(["R", "P", "S"], self.ProbabilityDist)[0]
-        self.Score = 0
+        self.TotalScore = 0
+        self.RecentScore = 0
 
     def ChangeDist(self, Array):
         self.ProbabilityDist = Array
@@ -21,7 +22,8 @@ class Agent:
         return self.Location
 
     def ChangeScore(self, Score):
-        self.Score = Score
+        self.TotalScore += Score
+        self.RecentScore = Score
         return self.Score
 
     def MakeAMove(self):
@@ -34,8 +36,11 @@ class Agent:
     def GetMove(self):
         return self.Move
 
-    def GetScore(self):
-        return self.Score
+    def GetRecentScore(self):
+        return self.RecentScore
+
+    def GetTotalScore(self):
+        return self.TotalScore
 
 
 
