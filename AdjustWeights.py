@@ -6,7 +6,7 @@ subclasses define the weight adjustments. may get
 different behaviour if we define different scalings 
 '''
 
-class AdjustWeights:
+class Weights:
     def __init__(self, Probs, Score, Status, JustPlayed):
         '''
         Scores - (int) current score of each agent
@@ -31,7 +31,7 @@ class AdjustWeights:
             raise ValueError("not normed!")
 
     def CheckStatus(self):
-        if self.Status != "W" or self.Status != "L":
+        if self.Status != "W" or self.Status != "L" or self.Status != "T":
             raise ValueError("illegal status!")
 
     def CheckJustPlayed(self):
@@ -70,15 +70,15 @@ class AdjustWeights:
             return Dict.get("T")
         return Dict.get(StatRepr) #who needs else: return 
 
-class Exponential(AdjustWeights):
+class Exponential(Weights):
     def __init__(self, Probs, Score, Status, JustPlayed):
         '''
         an initial test. factorials chosen to ensure nothing > 1
         '''
         super().__init__(Probs, Score, Status, JustPlayed)
     
-    def AdjustWeights(self):
-        Adjustment = np.exp(-self.Score)
+    def AdjustWeights(self, TimeStep):
+        Adjustment = np.exp(-self.Score)*np.exp(-TimeStep)
         self.CheckAdj(Adjustment)
         IWL, I1, I2, Oper = self.CompileDict() #unpack the dictionary
         if Oper == "+":
@@ -92,14 +92,35 @@ class Exponential(AdjustWeights):
         self.CheckProbs()
         return self.Probs
 
-'''
+class Linear(Weights):
+    def __init__(self, Probs, Score, Status, JustPlayed):
+        super().__init__(Probs, Score, Status, JustPlayed)
+    
+    def AdjustWeights(self, TimeStep, k = 1.1):
+        Adjustment = self.Score*np.exp(-k*TimeStep)/4
+        self.CheckAdj(Adjustment)
+        IWL, I1, I2, Oper = self.CompileDict() #unpack the dictionary
+        if Oper == "+":
+            self.Probs[IWL] += Adjustment
+            self.Probs[I1] -= Adjustment/2
+            self.Probs[I2] -= Adjustment/2  
+        elif Oper == "-":
+            self.Probs[IWL] -= Adjustment
+            self.Probs[I1] += Adjustment/2
+            self.Probs[I2] += Adjustment/2
+        self.CheckProbs()
+        return self.Probs
+
+
 #debugging
-score = 3
+k = 0.2
+score = 1
 probs = [0.3,0.4,0.3]
 test = Exponential(probs, score, "W","O")
-test.AdjustWeights()
+test.AdjustWeights(8)
 print()
 #should do nothing
-test = Exponential(probs, score, "W","T")
-test.AdjustWeights()
-'''
+test = Linear(probs, score, "W","T")
+for i in range(1,4):
+    a = test.AdjustWeights(i)
+    print(a)
