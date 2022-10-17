@@ -1,3 +1,3 @@
-from Grid.py import Grid
+from Grid import Grid
 
-Grid(3).visualize
+Grid(20).VisualiseGrid()

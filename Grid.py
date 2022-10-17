@@ -15,7 +15,8 @@ class Grid:
     def __init__(self, Dimension):
         self.KeyMapping = {"R": -1, "P": 0, "S": 1}
         self.Dimension = Dimension
-        AgentList = []
+        #forms a list of Agent instances
+        AgentList = [] 
         for i in range(0,self.Dimension**2):
             AgentList.append(Agent(i))
         self.Agents = AgentList
