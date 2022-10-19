@@ -46,6 +46,13 @@ class Agent():
     def GetProbabilityDist(self):
         return self.DistributionAndMove.GetProbs()
 
+    def GetAllData(self):
+        Loc = self.GetLocation()
+        Move = self.GetMove()
+        RS = self.GetRecentScore()
+        TS = self.GetTotalScore()
+        return [Loc, Move, RS, TS]
+
 
 
 

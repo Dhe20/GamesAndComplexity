@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt;
 from matplotlib import colors;
 from Agent import Agent;
-
+import numpy as np
 
 class Grid:
 
@@ -21,6 +21,8 @@ class Grid:
             AgentList.append(Agent(i))
         self.Agents = AgentList
 
+    def GetDimension(self):
+        return self.Dimension
     #Converter Purely for Visuals of Grid
 
     def ListToArray(self):
@@ -31,7 +33,8 @@ class Grid:
                 ArrayElement = self.Agents[self.Dimension * i + j].GetMove()
                 ArrayFile.append(self.KeyMapping[ArrayElement])
             Array.append(ArrayFile)
-        return Array
+
+        return np.array(Array)
 
     #Visualises Grid
 
