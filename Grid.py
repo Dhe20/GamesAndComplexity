@@ -134,13 +134,11 @@ class Grid:
                 for Opponent in Opponents:
                     Score += self.CheckWinner(Index, Opponent)
 
-
             elif Index in RightSide:
                 Score = 0
                 Opponents = [Index - 1, Index - self.Dimension, Index - self.Dimension + 1, Index + self.Dimension]
                 for Opponent in Opponents:
                     Score += self.CheckWinner(Index, Opponent)
-
 
             else:
                 Score = 0

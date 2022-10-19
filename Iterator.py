@@ -1,7 +1,7 @@
 from Grid import Grid;
 import pandas as pd;
 import time;
-from AdjustWeights import Linear
+#from WeightsAndMoves import Linear
 
 #Inherited class of Grid now allowing multiple iterations in time
 
@@ -18,7 +18,7 @@ class Iterator(Grid):
         for i in range(0, self.Iterations):
             self.CheckAllWinners()
             #i as an argument to add timed decay
-            self.UpdateAllDists(i) 
+            self.UpdateAllDists(i)
             self.UpdateAllMoves()
 
     # All Agents make a new move
@@ -35,17 +35,17 @@ class Iterator(Grid):
             RecentMove = self.Agents[i].GetMove()
             
 
-            RPStoOIX = {
-                "R" : "O",
-                "P" : "I",
-                "S" : "X",
-            }
-            RecentMove = RPStoOIX.get(RecentMove)
+            # RPStoOIX = {
+            #     "R" : "O",
+            #     "P" : "I",
+            #     "S" : "X",
+            # }
+            # RecentMove = RPStoOIX.get(RecentMove)
 
             ### CREATE FUNCTION HERE
             # Some Function using Score and recent move to change distribution
 
-            NewDist = [0.34, 0.33, 0.33]
+            NewDist = [1/3, 1/3, 1/3]
             ###
 
             self.Agents[i].ChangeDist(NewDist)
