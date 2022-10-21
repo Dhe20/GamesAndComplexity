@@ -103,11 +103,11 @@ class Iterator(Grid):
 
 
 #Example of 5 iterations and then replotting grid:
-x=Iterator(4,3)
+x=Iterator(5,40)
 x.VisualiseGrid()
 x.CheckAllWinners()
 sum(x.CheckAllWinners()) # will this always be 0?
-x.Run(animate = False, SaveData=True)
+x.Run(animate = False, SaveData=False)
 time.sleep(3)
 x.VisualiseGrid()
 

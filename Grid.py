@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt;
 from matplotlib import colors;
 from Agent import Agent;
-import numpy as np
+import numpy as np;
+import random
 
 class Grid:
 
@@ -12,13 +13,27 @@ class Grid:
     # List of Objects (Agent Instances)
     #Dimension is Width of Grid
 
-    def __init__(self, Dimension):
+    def __init__(self, Dimension, EmptyCellFrac = 0):
+        '''
+        EmptyCellFrac: Float between 0 and 1. Fraction of the grid that is empty
+        '''
         self.KeyMapping = {"R": -1, "P": 0, "S": 1}
         self.Dimension = Dimension
         #forms a list of Agent instances
         AgentList = [] 
+        
         for i in range(0,self.Dimension**2):
             AgentList.append(Agent(i))
+
+        ###EmptyCells###
+        # if EmptyCellFrac < 0 or EmptyCellFrac > 1:
+        #     raise ValueError("Invalid Cell Fraction!")
+
+        # if EmptyCellFrac !=0:
+        #     EmptyCellCount = int(EmptyCellFrac * len(AgentList))    
+        #     for i in range(EmptyCellCount):
+        #         pass
+
         self.Agents = AgentList
 
     def GetDimension(self):
@@ -51,28 +66,46 @@ class Grid:
     # Checks Winner of Invididual Round
 
     def CheckWinner(self,IndexA,IndexB):
-        if self.Agents[IndexA].GetMove() == "P":
-            if self.Agents[IndexB].GetMove() == "R":
-                return 1
-            if self.Agents[IndexB].GetMove() == "P":
-                return 0
-            if self.Agents[IndexB].GetMove() == "S":
-                return -1
-        if self.Agents[IndexA].GetMove() == "R":
-            if self.Agents[IndexB].GetMove() == "R":
-                return 0
-            if self.Agents[IndexB].GetMove() == "P":
-                return -1
-            if self.Agents[IndexB].GetMove() == "S":
-                return 1
-        if self.Agents[IndexA].GetMove() == "S":
-            if self.Agents[IndexB].GetMove() == "R":
-                return -1
-            if self.Agents[IndexB].GetMove() == "P":
-                return 1
-            if self.Agents[IndexB].GetMove() == "S":
-                return 0
+        Outcomes ={
+            "RR" : 0,
+            "RP" : -1,
+            "RS" : 1,
+            "PR" : 1,
+            "PP" : 0,
+            "PS" : -1,
+            "SR" : -1,
+            "SP" : 1,
+            "SS" : 0,
+        }
 
+        Move = self.Agents[IndexA].GetMove()+self.Agents[IndexB].GetMove()
+        ValueFromDict = Outcomes.get(Move)
+        return ValueFromDict
+
+        #pls use dictionaries
+        # if self.Agents[IndexA].GetMove() == "R":
+        #     if self.Agents[IndexB].GetMove() == "R":
+        #         return 0
+        #     if self.Agents[IndexB].GetMove() == "P":
+        #         return -1
+        #     if self.Agents[IndexB].GetMove() == "S":
+        #         return 1
+        # if self.Agents[IndexA].GetMove() == "P":
+        #     if self.Agents[IndexB].GetMove() == "R":
+        #         return 1
+        #     if self.Agents[IndexB].GetMove() == "P":
+        #         return 0
+        #     if self.Agents[IndexB].GetMove() == "S":
+        #         return -1
+        # if self.Agents[IndexA].GetMove() == "S":
+        #     if self.Agents[IndexB].GetMove() == "R":
+        #         return -1
+        #     if self.Agents[IndexB].GetMove() == "P":
+        #         return 1
+        #     if self.Agents[IndexB].GetMove() == "S":
+        #         return 0
+
+        
 
     # Iterates through board finding total score from non-diagonal neighbours
     # If statements are to check different edge cases, now made to have equal opponents to central agents

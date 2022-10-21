@@ -43,10 +43,12 @@ class WeightsAndMoves:
 
     def GetProbs(self):
         return self.Probs
+
     def ChangeProbs(self, probs):
         self.CheckProbs(probs)
         self.Probs = probs
         return self.Probs
+
     def MakeAMove(self):
         if self.MoveType == "Random":
             Move = self.Random()
@@ -61,11 +63,6 @@ class WeightsAndMoves:
         #FunkyFunction
         self.Probs = self.Probs
         return self.Probs
-
-
-
-
-
 
 
 
