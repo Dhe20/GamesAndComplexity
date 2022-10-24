@@ -1,5 +1,6 @@
 from random import choices;
 from WeightsAndMoves import WeightsAndMoves;
+import numpy as np;
 
 class Agent():
 

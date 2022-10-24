@@ -126,12 +126,4 @@ class Iterator(Grid):
         return NewDist
 
 
-#Example of 10 iterations and then replotting grid:
-x=Iterator(100,100, Ternary = True)
-x.VisualiseGrid()
-x.CheckAllWinners()
-sum(x.CheckAllWinners()) #will this always be 0? - yes
-x.Run(animate = False, SaveData=False, KillOrBeKilledAndLearn = True)
-time.sleep(3)
-x.VisualiseGrid()
 
