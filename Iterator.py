@@ -10,6 +10,7 @@ import numpy as np;
 import random;
 import string;
 from random import choices;
+from tqdm import tqdm
 
 
 
@@ -41,7 +42,7 @@ class Iterator(Grid):
             colormap = colors.ListedColormap(["red", "green", "blue"])
             ims = []
         
-        for i in range(0, self.Iterations):
+        for i in tqdm(range(0, self.Iterations)):
             self.CheckAllWinners()
             #i as an argument to add timed decay
             self.UpdateAllDists(i, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn)
@@ -118,9 +119,11 @@ class Iterator(Grid):
         return NewDist
 
     def KillOrBeKilledAndLearn(self, i, RecentScore, TotalScore, RecentMove):
+        #Change Move according to what beat you:
         MoveShuffle = {"R": [0,1,0], "P": [0,0,1], "S": [1,0,0]}
+
         if RecentScore < 0:
-            NewDist = MoveShuffle[""+RecentMove]
+            NewDist = MoveShuffle[RecentMove]
         else:
             NewDist = self.Agents[i].GetProbabilityDist()
         return NewDist
