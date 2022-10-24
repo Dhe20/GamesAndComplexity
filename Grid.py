@@ -13,17 +13,18 @@ class Grid:
     # List of Objects (Agent Instances)
     #Dimension is Width of Grid
 
-    def __init__(self, Dimension, EmptyCellFrac = 0):
+    def __init__(self, Dimension, EmptyCellFrac = 0, Uniform = False, Ternary = False):
         '''
         EmptyCellFrac: Float between 0 and 1. Fraction of the grid that is empty
         '''
+
         self.KeyMapping = {"R": -1, "P": 0, "S": 1}
         self.Dimension = Dimension
         #forms a list of Agent instances
         AgentList = [] 
-        
+
         for i in range(0,self.Dimension**2):
-            AgentList.append(Agent(i))
+            AgentList.append(Agent(i, Uniform = Uniform, Ternary=Ternary))
 
         ###EmptyCells###
         # if EmptyCellFrac < 0 or EmptyCellFrac > 1:
@@ -82,29 +83,6 @@ class Grid:
         ValueFromDict = Outcomes.get(Move)
         return ValueFromDict
 
-        #pls use dictionaries
-        # if self.Agents[IndexA].GetMove() == "R":
-        #     if self.Agents[IndexB].GetMove() == "R":
-        #         return 0
-        #     if self.Agents[IndexB].GetMove() == "P":
-        #         return -1
-        #     if self.Agents[IndexB].GetMove() == "S":
-        #         return 1
-        # if self.Agents[IndexA].GetMove() == "P":
-        #     if self.Agents[IndexB].GetMove() == "R":
-        #         return 1
-        #     if self.Agents[IndexB].GetMove() == "P":
-        #         return 0
-        #     if self.Agents[IndexB].GetMove() == "S":
-        #         return -1
-        # if self.Agents[IndexA].GetMove() == "S":
-        #     if self.Agents[IndexB].GetMove() == "R":
-        #         return -1
-        #     if self.Agents[IndexB].GetMove() == "P":
-        #         return 1
-        #     if self.Agents[IndexB].GetMove() == "S":
-        #         return 0
-
         
 
     # Iterates through board finding total score from non-diagonal neighbours
@@ -144,7 +122,6 @@ class Grid:
                 Score = 0
                 for Opponent in Opponents:
                     Score += self.CheckWinner(Index, Opponent)
-
 
             elif Index == BottomRightCorner:
                 Opponents = [Index-1, RightSide[-1], BottomLeftCorner, TopRightCorner]

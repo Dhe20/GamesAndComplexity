@@ -7,7 +7,7 @@ different behaviour if we define different scalings
 '''
 
 class WeightsAndMoves:
-    def __init__(self, Probs = None, Uniform = True, MoveType = None):#, JustPlayed):
+    def __init__(self, Probs = None, Uniform = False, Ternary = False, MoveType = None):#, JustPlayed):
         '''
         Scores - (int) current score of each agent
         Probs - (list)current probability to play O,I,X
@@ -19,8 +19,11 @@ class WeightsAndMoves:
             self.Probs = [1/3,1/3,1/3]
         elif Probs:
             self.Probs = Probs
+        elif Ternary:
+            self.Probs = choices([[1,0,0], [0,1,0], [0,0,1]])[0]
+
         self.PO, self.PI, self.PX = self.Probs #to make defining functions easier
-        # self.JustPlayed = JustPlayed
+
         self.CheckProbs()
 
         if MoveType == None:

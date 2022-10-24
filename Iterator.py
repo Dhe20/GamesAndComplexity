@@ -1,23 +1,28 @@
 from Grid import Grid;
 import pandas as pd;
 import time;
-import pickle as pk
-import matplotlib.animation as ani
-import matplotlib.pyplot as plt
-from matplotlib import colors
-from time import sleep
-import numpy as np
-import random
-import string
+import pickle as pk;
+import matplotlib.animation as ani;
+import matplotlib.pyplot as plt;
+from matplotlib import colors;
+from time import sleep;
+import numpy as np;
+import random;
+import string;
+from random import choices;
+
+
+
 #from WeightsAndMoves import Linear
 
 #Inherited class of Grid now allowing multiple iterations in time
 
 
 class Iterator(Grid):
-    def __init__(self, Dimension, NumberOfSteps):
+    def __init__(self, Dimension, NumberOfSteps, Uniform = False, Ternary = False):
+
         #Take all of Grid's methods and attributes:
-        super().__init__(Dimension) 
+        super().__init__(Dimension, Uniform = Uniform, Ternary=Ternary)
 
         #Adding storage for PKL and iterations
         self.Iterations = NumberOfSteps
@@ -25,7 +30,7 @@ class Iterator(Grid):
     def GetNumberOfSteps(self):
         return self.Iterations
 
-    def Run(self, SaveData = False, animate = True):
+    def Run(self, SaveData = False, animate = True, KillOrBeKilled = False, KillOrBeKilledAndLearn = False):
         
         if SaveData == True:
             AllData = []
@@ -39,9 +44,11 @@ class Iterator(Grid):
         for i in range(0, self.Iterations):
             self.CheckAllWinners()
             #i as an argument to add timed decay
-            self.UpdateAllDists(i)
+            self.UpdateAllDists(i, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn)
             self.UpdateAllMoves()
             AgentData = self.ListToArray()
+
+
             if animate == True:
                 im = ax.imshow(AgentData, cmap=colormap, animated = True)
                 ims.append([im])
@@ -78,12 +85,11 @@ class Iterator(Grid):
         return self.Agents
 
     # Use scores to adjust each individual Agent's distribution
-    def UpdateAllDists(self,TimeStep):
+    def UpdateAllDists(self, TimeStep, KillOrBeKilled = False, KillOrBeKilledAndLearn = False):
         for i in range(0, len(self.Agents)):
             RecentScore = self.Agents[i].GetRecentScore()
             TotalScore = self.Agents[i].GetTotalScore()
             RecentMove = self.Agents[i].GetMove()
-            
 
             # RPStoOIX = {
             #     "R" : "O",
@@ -92,22 +98,40 @@ class Iterator(Grid):
             # }
             # RecentMove = RPStoOIX.get(RecentMove)
 
-            ### CREATE FUNCTION HERE
-            # Some Function using Score and recent move to change distribution
+            if KillOrBeKilled:
+                NewDist = self.KillOrBeKilled(i, RecentScore, TotalScore, RecentMove)
 
-            NewDist = [1/3, 1/3, 1/3]
-            ###
+            elif KillOrBeKilledAndLearn:
+                NewDist = self.KillOrBeKilledAndLearn(i, RecentScore, TotalScore, RecentMove)
+
+            else:
+                NewDist = self.Agents[i].GetProbabilityDist()
 
             self.Agents[i].ChangeDist(NewDist)
 
 
+    def KillOrBeKilled(self, i, RecentScore, TotalScore, RecentMove):
+        if RecentScore < 0:
+            NewDist = choices([[1, 0, 0], [0, 1, 0], [0, 0, 1]])[0]
+        else:
+            NewDist = self.Agents[i].GetProbabilityDist()
+        return NewDist
 
-#Example of 5 iterations and then replotting grid:
-x=Iterator(5,40)
+    def KillOrBeKilledAndLearn(self, i, RecentScore, TotalScore, RecentMove):
+        MoveShuffle = {"R": [0,1,0], "P": [0,0,1], "S": [1,0,0]}
+        if RecentScore < 0:
+            NewDist = MoveShuffle[""+RecentMove]
+        else:
+            NewDist = self.Agents[i].GetProbabilityDist()
+        return NewDist
+
+
+#Example of 10 iterations and then replotting grid:
+x=Iterator(100,100, Ternary = True)
 x.VisualiseGrid()
 x.CheckAllWinners()
-sum(x.CheckAllWinners()) # will this always be 0?
-x.Run(animate = False, SaveData=False)
+sum(x.CheckAllWinners()) #will this always be 0? - yes
+x.Run(animate = False, SaveData=False, KillOrBeKilledAndLearn = True)
 time.sleep(3)
 x.VisualiseGrid()
 
