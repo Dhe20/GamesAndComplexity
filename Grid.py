@@ -17,8 +17,9 @@ class Grid:
         '''
         EmptyCellCount: (int) number of empty cells
         '''
-        self.KeyMapping = {"R": -1, "P": 0, "S": 1, "E": 2}
         self.Dimension = Dimension
+        self.KeyMapping = {"R": -1, "P": 0, "S": 1}
+        self.colormap = ["red", "green", "blue"]
         #forms a list of Agent instances
         AgentList = [] 
         
@@ -33,6 +34,9 @@ class Grid:
             EmptyCellLocs = random.sample(range(0, self.Dimension**2), EmptyCellCount)
             for i in range(EmptyCellCount):
                 AgentList[EmptyCellLocs[i]] = None
+                #also update colormap if there are emptycells
+                self.KeyMapping = {"R": -1, "P": 0, "S": 1, "E": 2}
+                self.colormap = ["red", "green", "blue", "white"]
 
         self.Agents = AgentList
 
@@ -57,7 +61,7 @@ class Grid:
     #Visualises Grid
 
     def VisualiseGrid(self):
-        colormap = colors.ListedColormap(["red", "green", "blue", "white"])
+        colormap = colors.ListedColormap(self.colormap)
         plt.figure(figsize=(5, 5))
         plt.imshow(self.ListToArray(), cmap=colormap)
         plt.show()
@@ -184,7 +188,7 @@ class Grid:
                 ScoreList.append(Score)
 
 
-        ScoreArray = np.reshape(ScoreList, (5,5)) # to make analysis a little easier
+        ScoreArray = np.reshape(ScoreList, (self.Dimension,self.Dimension)) # to make analysis a little easier
         return ScoreList, ScoreArray
 
     def CheckAroundAgent(self, index):

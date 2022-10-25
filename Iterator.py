@@ -45,7 +45,7 @@ class Iterator(Grid):
             #save data
             if SaveData == True:
                 localcopy = copy.deepcopy(self.Agents)
-                print(localcopy[1].TotalScore)
+                #print(localcopy[1].TotalScore)
                 AllAgentGrids.append(localcopy)
 
         if SaveData == True:
@@ -98,11 +98,11 @@ class Iterator(Grid):
 
 
 #Example of 5 iterations and then replotting grid:
-x=Iterator(5,40, EmptyCellCount=0)
+x=Iterator(3,20)
 x.VisualiseGrid()
 x.CheckAllWinners()
 sum(x.CheckAllWinners()[0]) # will this always be 0?
-x.Run(SaveData=True)
+x.Run(SaveData=False)
 time.sleep(3)
 x.VisualiseGrid()
 

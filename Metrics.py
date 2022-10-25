@@ -7,23 +7,31 @@ import matplotlib.pyplot as plt
 from matplotlib import colors
 
 from Agent import Agent
-# import Grid
+from Grid import Grid
 
-class Metrics:
-    def __init__(self, filename):
-    
-        if filename[-4:] != ".pkl":
+class Metrics: #inherits methods 
+        #weird boilerplate to inherit class variables ...
+    def __init__(self, Filename):
+
+        if Filename[-4:] != ".pkl":
             raise ValueError(".pkl only pls")
-        self.filename = filename
+        self.filename = Filename
         
         #reading data
-        pickle_in = open(filename, 'rb')
+        pickle_in = open(Filename, 'rb')
         self.AgentList = pickle.load(pickle_in)
 
         self.AgentArray = np.array(self.AgentList)
         self.NoIters = len(self.AgentArray)
         self.NoAgents = len(self.AgentArray.T)#take the transpose
+        self.Dimension = int(np.sqrt(self.NoAgents))
 
+        if None in self.AgentArray: #no need for == True is funny
+            self.KeyMapping = {"R": -1, "P": 0, "S": 1, "E": 2}
+            self.colorlist = ["red", "green", "blue", "white"]
+        else:
+            self.KeyMapping = {"R": -1, "P": 0, "S": 1}
+            self.colorlist = ["red", "green", "blue"]
         # dk what this is doing
         # AgentCount = self.AgentArray[0][1]
         # for i in range(len(data)-1):
@@ -38,12 +46,12 @@ class Metrics:
         tsteps = np.linspace(0,self.NoIters, self.NoIters)#is there a better way to do this?
         #need to change this to account for empty cells
         N = np.zeros((3,self.NoIters))
-        MoveDict = {"R": 0, "P": 1, "S": 2, "E": 3}
         for j in range(self.NoIters):
             for i in range(self.NoAgents):
+                if self.AgentArray[j][i] is None:
+                    continue
                 Move = self.AgentArray[j][i].GetMove()
-                N[MoveDict.get(Move)][j] += 1
-
+                N[self.KeyMapping.get(Move)][j] += 1
 
         ax.plot(tsteps, N[0], color = 'red', label = 'Rock')
         ax.plot(tsteps, N[1] , color = 'green', label = 'Paper')
@@ -53,19 +61,33 @@ class Metrics:
         #plt.savefig('.png', dpi = 600)
         plt.show()
 
+    def ListToArrayMetrics(self, AgentIteration):
+        Array = []
+        for i in range(0, self.Dimension):
+            ArrayFile = []
+            for j in range(0, self.Dimension):
+                if AgentIteration[self.Dimension * i + j] is None:
+                    ArrayFile.append(2)
+                    continue
+                ArrayElement = AgentIteration[self.Dimension * i + j].GetMove()
+                ArrayFile.append(self.KeyMapping[ArrayElement])
+            Array.append(ArrayFile)
+        # make a matrix
+        Array = np.array(Array).reshape((self.Dimension,self.Dimension))
+        return Array
+
+
     def AnimateEvolution(self):
         #WIP 
         fig, ax = plt.subplots(figsize = (5,5))
-        colormap = colors.ListedColormap(["red", "green", "blue", "white"])
+        colormap = colors.ListedColormap(self.colorlist)
         ims = []
-        MoveDict = {"R": -1, "P": 1, "S": 2, "E": 3}
+        #MoveDict = {"R": -1, "P": 1, "S": 2, "E": 3} self.movedict
         Grid = np.zeros(self.NoAgents)
         for i in range(self.NoIters):
-            AgentData = self.AgentArray[i]
-            
+            AgentData = self.ListToArrayMetrics(self.AgentArray[i])
             # Dim = int(np.sqrt(len(AgentData)))
             # AgentData = AgentData.reshape((Dim, Dim))
-
             im = ax.imshow(AgentData, cmap=colormap, animated = True)
             ims.append([im])
 
@@ -83,6 +105,6 @@ class Metrics:
             N[k] = np.count_nonzero(AgentData == k-1)
         IterData = [IterAgentData, N] #ADD NEW METRICS TO LIST
 
-x = Metrics('pkl/40_5_rqjpe.pkl')
+x = Metrics('pkl/20_3_ewgwz.pkl')
 x.PlotRPSAmount()
 x.AnimateEvolution()
