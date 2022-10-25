@@ -1,6 +1,19 @@
+from copy import copy
 from Grid import Grid;
 import pandas as pd;
 import time;
+import pickle as pk
+import matplotlib.animation as ani
+import matplotlib.pyplot as plt
+from matplotlib import colors
+from time import sleep
+import numpy as np
+import random
+import string
+import copy
+from Grid import Grid;
+import pandas as pd;
+import time
 import pickle as pk;
 import matplotlib.animation as ani;
 import matplotlib.pyplot as plt;
@@ -11,8 +24,15 @@ import random;
 import string;
 from random import choices;
 from tqdm import tqdm
-
-
+import pickle as pk
+import matplotlib.animation as ani
+import matplotlib.pyplot as plt
+from matplotlib import colors
+from time import sleep
+import numpy as np
+import random
+import string
+import copy
 
 #from WeightsAndMoves import Linear
 
@@ -20,10 +40,10 @@ from tqdm import tqdm
 
 
 class Iterator(Grid):
-    def __init__(self, Dimension, NumberOfSteps, Uniform = False, Ternary = False):
+    def __init__(self, Dimension, NumberOfSteps, Uniform = False, Ternary = False, EmptyCellCount=0):
 
         #Take all of Grid's methods and attributes:
-        super().__init__(Dimension, Uniform = Uniform, Ternary=Ternary)
+        super().__init__(Dimension, Uniform = Uniform, Ternary=Ternary, EmptyCellCount)
 
         #Adding storage for PKL and iterations
         self.Iterations = NumberOfSteps
@@ -32,53 +52,38 @@ class Iterator(Grid):
     def GetNumberOfSteps(self):
         return self.Iterations
 
-    def Run(self, SaveData = False, animate = True, KillOrBeKilled = False, KillOrBeKilledAndLearn = False):
+    def Run(self, SaveData = False, KillOrBeKilled = False, KillOrBeKilledAndLearn = False):
         
         if SaveData == True:
             AllData = []
 
-
-        if animate == True:
-            fig, ax = plt.subplots(figsize = (5,5))
-            colormap = colors.ListedColormap(["red", "green", "blue"])
-            ims = []
-        
         for i in tqdm(range(0, self.Iterations)):
+            ScoreArray = self.CheckAllWinners()[1]
             self.CheckAllWinners()
             self.IncestMetre.append(self.Incest())
             #i as an argument to add timed decay
             self.UpdateAllDists(i, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn)
             self.UpdateAllMoves()
             AgentData = self.ListToArray()
+            self.UpdateSomePositions(AgentData, ScoreArray)#for dying away and moving
 
-
-            if animate == True:
-                im = ax.imshow(AgentData, cmap=colormap, animated = True)
-                ims.append([im])
+            #save data
             if SaveData == True:
-                IterAgentData = self.ListToArray()
-                # NEW METRICS GO HERE
-                N = np.zeros(3)
-                for k in range(3): # find how many RPS at each timestep
-                    N[k] = np.count_nonzero(AgentData == k-1)
-                IterData = [IterAgentData, N] #ADD NEW METRICS TO LIST
-                AllData.append(IterData)
-                
-        if animate == True:
-            animation = ani.ArtistAnimation(
-                fig, ims, interval=500, 
-                blit=True,repeat_delay=2000
-                )
-            plt.show()
+                localcopy = copy.deepcopy(self.Agents)
+                #print(localcopy[1].TotalScore)
+                AllAgentGrids.append(localcopy)
 
         if SaveData == True:
-            NoIters = self.GetNumberOfSteps()
-            Dims = self.GetDimension()
-            #no iterations + dimensions + random string .pkl
-            letters = string.ascii_lowercase
-            Filename = 'pkl/'+str(NoIters)+'_'+str(Dims)+'_'+''.join(random.choice(letters) for i in range(3))+'.pkl'
+            #add any other data to the filename here
+            FilenameData = [str(self.GetNumberOfSteps()),
+                            str(self.GetDimension()),
+                            ''.join(random.choice(string.ascii_lowercase) for i in range(5)),]
+            #create a local /pkl dir
+            #pkl/NoIterations_GridSize_5letterstring.pkl
+            Filename = 'pkl/'+FilenameData[0]+'_'+FilenameData[1]+'_'+FilenameData[-1]+'.pkl'
+            print('saved at ', Filename)
             pickle_out = open(Filename, 'wb')
-            pk.dump(AllData, pickle_out)
+            pk.dump(AllAgentGrids, pickle_out)
             pickle_out.close()
 
 
@@ -86,6 +91,8 @@ class Iterator(Grid):
     # All Agents make a new move
     def UpdateAllMoves(self):
         for i in range(0, len(self.Agents)):
+            if self.Agents[i] is None:
+                continue
             self.Agents[i].MakeAMove()
         return self.Agents
 
@@ -95,6 +102,9 @@ class Iterator(Grid):
     # Use scores to adjust each individual Agent's distribution
     def UpdateAllDists(self, TimeStep, KillOrBeKilled = False, KillOrBeKilledAndLearn = False):
         for i in range(0, len(self.Agents)):
+            if self.Agents[i] is None:
+                continue
+
             RecentScore = self.Agents[i].GetRecentScore()
             TotalScore = self.Agents[i].GetTotalScore()
             RecentMove = self.Agents[i].GetMove()

@@ -15,11 +15,12 @@ class Grid:
 
     def __init__(self, Dimension, EmptyCellFrac = 0, Uniform = False, Ternary = False):
         '''
-        EmptyCellFrac: Float between 0 and 1. Fraction of the grid that is empty
+        EmptyCellCount: (int) number of empty cells
         '''
 
-        self.KeyMapping = {"R": -1, "P": 0, "S": 1}
         self.Dimension = Dimension
+        self.KeyMapping = {"R": -1, "P": 0, "S": 1}
+        self.colormap = ["red", "green", "blue"]
         #forms a list of Agent instances
         AgentList = [] 
 
@@ -27,13 +28,16 @@ class Grid:
             AgentList.append(Agent(i, Uniform = Uniform, Ternary=Ternary))
 
         ###EmptyCells###
-        # if EmptyCellFrac < 0 or EmptyCellFrac > 1:
-        #     raise ValueError("Invalid Cell Fraction!")
+        if isinstance(EmptyCellCount, int) == False:
+            raise ValueError("Empty cells must be int!")
 
-        # if EmptyCellFrac !=0:
-        #     EmptyCellCount = int(EmptyCellFrac * len(AgentList))    
-        #     for i in range(EmptyCellCount):
-        #         pass
+        if EmptyCellCount !=0:
+            EmptyCellLocs = random.sample(range(0, self.Dimension**2), EmptyCellCount)
+            for i in range(EmptyCellCount):
+                AgentList[EmptyCellLocs[i]] = None
+                #also update colormap if there are emptycells
+                self.KeyMapping = {"R": -1, "P": 0, "S": 1, "E": 2}
+                self.colormap = ["red", "green", "blue", "white"]
 
         self.Agents = AgentList
 
@@ -46,6 +50,9 @@ class Grid:
         for i in range(0, self.Dimension):
             ArrayFile = []
             for j in range(0, self.Dimension):
+                if self.Agents[self.Dimension * i + j] is None:
+                    ArrayFile.append(2)
+                    continue
                 ArrayElement = self.Agents[self.Dimension * i + j].GetMove()
                 ArrayFile.append(self.KeyMapping[ArrayElement])
             Array.append(ArrayFile)
@@ -55,7 +62,7 @@ class Grid:
     #Visualises Grid
 
     def VisualiseGrid(self):
-        colormap = colors.ListedColormap(["red", "green", "blue"])
+        colormap = colors.ListedColormap(self.colormap)
         plt.figure(figsize=(5, 5))
         plt.imshow(self.ListToArray(), cmap=colormap)
         plt.show()
@@ -67,16 +74,14 @@ class Grid:
     # Checks Winner of Invididual Round
 
     def CheckWinner(self,IndexA,IndexB):
+
+        if self.Agents[IndexA] is None or self.Agents[IndexB] is None:
+            return 0
+
         Outcomes ={
-            "RR" : 0,
-            "RP" : -1,
-            "RS" : 1,
-            "PR" : 1,
-            "PP" : 0,
-            "PS" : -1,
-            "SR" : -1,
-            "SP" : 1,
-            "SS" : 0,
+            "RR" :  0, "RP" : -1, "RS" :  1,
+            "PR" :  1, "PP" :  0, "PS" : -1,
+            "SR" : -1, "SP" :  1, "SS" :  0,
         }
 
         Move = self.Agents[IndexA].GetMove()+self.Agents[IndexB].GetMove()
@@ -122,65 +127,72 @@ class Grid:
 
         for Index in range(0, self.Dimension**2):
 
+            Score = 0
+
             if Index == TopLeftCorner:
                 Opponents = [1, LeftSide[0], TopRightCorner, BottomLeftCorner]
-                Score = 0
                 for Opponent in Opponents:
                     Score += self.CheckWinner(Index, Opponent)
 
             elif Index == TopRightCorner:
                 Opponents = [Index - 1, RightSide[0], TopLeftCorner, BottomRightCorner]
-                Score = 0
                 for Opponent in Opponents:
                     Score += self.CheckWinner(Index, Opponent)
 
             elif Index == BottomLeftCorner:
                 Opponents = [Index+1, LeftSide[-1], BottomRightCorner, TopLeftCorner]
-                Score = 0
                 for Opponent in Opponents:
                     Score += self.CheckWinner(Index, Opponent)
 
             elif Index == BottomRightCorner:
                 Opponents = [Index-1, RightSide[-1], BottomLeftCorner, TopRightCorner]
-                Score = 0
                 for Opponent in Opponents:
                     Score += self.CheckWinner(Index, Opponent)
 
             elif Index in TopSide:
-                Score = 0
                 Opponents = [Index-1, Index+self.Dimension, Index+1, Index + (self.Dimension**2-self.Dimension)]
                 for Opponent in Opponents:
                     Score += self.CheckWinner(Index, Opponent)
 
             elif Index in BottomSide:
-                Score = 0
                 Opponents = [Index - 1, Index - self.Dimension, Index + 1, Index - (self.Dimension ** 2 - self.Dimension)]
                 for Opponent in Opponents:
                     Score += self.CheckWinner(Index, Opponent)
 
             elif Index in LeftSide:
-                Score = 0
                 Opponents = [Index - 1 + self.Dimension, Index - self.Dimension, Index + 1, Index + self.Dimension]
                 for Opponent in Opponents:
                     Score += self.CheckWinner(Index, Opponent)
 
             elif Index in RightSide:
-                Score = 0
                 Opponents = [Index - 1, Index - self.Dimension, Index - self.Dimension + 1, Index + self.Dimension]
                 for Opponent in Opponents:
                     Score += self.CheckWinner(Index, Opponent)
 
             else:
-                Score = 0
                 Opponents = [Index - 1, Index - self.Dimension, Index + 1, Index + self.Dimension]
                 for Opponent in Opponents:
                     Score += self.CheckWinner(Index, Opponent)
 
-            self.Agents[Index].ChangeScore(Score)
-            ScoreList.append(Score)
+            if self.Agents[Index] is None:
+                # just adds 0 to this agent
+                ScoreList.append(Score)
+            else:
+                self.Agents[Index].ChangeScore(Score)
+                ScoreList.append(Score)
 
-        return ScoreList
 
+        ScoreArray = np.reshape(ScoreList, (self.Dimension,self.Dimension)) # to make analysis a little easier
+        return ScoreList, ScoreArray
+
+    def CheckAroundAgent(self, index):
+        pass
+
+
+
+    def UpdateSomePositions(self, AgentData, ScoreArray):
+        #ScoreArray[:,1][(5)%5]
+        pass
 
 
 

@@ -73,9 +73,6 @@ class WeightsAndMoves:
 
 
 
-
-
-
 # class Exponential(Weights):
 #     def __init__(self, Probs, Score, Status):
 #         '''
