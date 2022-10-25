@@ -83,6 +83,23 @@ class Grid:
         ValueFromDict = Outcomes.get(Move)
         return ValueFromDict
 
+    def CheckSimilar(self,IndexA,IndexB):
+        Outcomes ={
+            "RR" : 1,
+            "RP" : 0,
+            "RS" : 0,
+            "PR" : 0,
+            "PP" : 1,
+            "PS" : 0,
+            "SR" : 0,
+            "SP" : 0,
+            "SS" : 1,
+        }
+
+        Move = self.Agents[IndexA].GetMove()+self.Agents[IndexB].GetMove()
+        ValueFromDict = Outcomes.get(Move)
+        return ValueFromDict
+
         
 
     # Iterates through board finding total score from non-diagonal neighbours

@@ -27,6 +27,7 @@ class Iterator(Grid):
 
         #Adding storage for PKL and iterations
         self.Iterations = NumberOfSteps
+        self.IncestMetre = []
 
     def GetNumberOfSteps(self):
         return self.Iterations
@@ -44,6 +45,7 @@ class Iterator(Grid):
         
         for i in tqdm(range(0, self.Iterations)):
             self.CheckAllWinners()
+            self.IncestMetre.append(self.Incest())
             #i as an argument to add timed decay
             self.UpdateAllDists(i, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn)
             self.UpdateAllMoves()
@@ -79,11 +81,16 @@ class Iterator(Grid):
             pk.dump(AllData, pickle_out)
             pickle_out.close()
 
+
+
     # All Agents make a new move
     def UpdateAllMoves(self):
         for i in range(0, len(self.Agents)):
             self.Agents[i].MakeAMove()
         return self.Agents
+
+    def GetIncest(self):
+        return self.IncestMetre
 
     # Use scores to adjust each individual Agent's distribution
     def UpdateAllDists(self, TimeStep, KillOrBeKilled = False, KillOrBeKilledAndLearn = False):
@@ -127,6 +134,86 @@ class Iterator(Grid):
         else:
             NewDist = self.Agents[i].GetProbabilityDist()
         return NewDist
+
+    def Incest(self):
+
+        SimilarityDict = {"Total":[], "R":[], "P":[], "S":[]}
+
+        TopLeftCorner = 0
+        TopRightCorner = self.Dimension - 1
+        BottomLeftCorner = self.Dimension ** 2 - self.Dimension
+        BottomRightCorner = self.Dimension ** 2 - 1
+        TopSide = [i for i in range(1, self.Dimension - 1)]
+        BottomSide = [self.Dimension ** 2 - self.Dimension + i for i in range(1, self.Dimension - 1)]
+        LeftSide = [self.Dimension * i for i in range(1, self.Dimension - 1)]
+        RightSide = [self.Dimension - 1 + self.Dimension * i for i in range(1, self.Dimension - 1)]
+
+        for Index in range(0, self.Dimension ** 2):
+
+            if Index == TopLeftCorner:
+                Opponents = [1, LeftSide[0], TopRightCorner, BottomLeftCorner]
+                Score = 0
+                for Opponent in Opponents:
+                    Score += self.CheckSimilar(Index, Opponent)
+
+            elif Index == TopRightCorner:
+                Opponents = [Index - 1, RightSide[0], TopLeftCorner, BottomRightCorner]
+                Score = 0
+                for Opponent in Opponents:
+                    Score += self.CheckSimilar(Index, Opponent)
+
+            elif Index == BottomLeftCorner:
+                Opponents = [Index + 1, LeftSide[-1], BottomRightCorner, TopLeftCorner]
+                Score = 0
+                for Opponent in Opponents:
+                    Score += self.CheckSimilar(Index, Opponent)
+
+            elif Index == BottomRightCorner:
+                Opponents = [Index - 1, RightSide[-1], BottomLeftCorner, TopRightCorner]
+                Score = 0
+                for Opponent in Opponents:
+                    Score += self.CheckSimilar(Index, Opponent)
+
+            elif Index in TopSide:
+                Score = 0
+                Opponents = [Index - 1, Index + self.Dimension, Index + 1,
+                             Index + (self.Dimension ** 2 - self.Dimension)]
+                for Opponent in Opponents:
+                    Score += self.CheckSimilar(Index, Opponent)
+
+            elif Index in BottomSide:
+                Score = 0
+                Opponents = [Index - 1, Index - self.Dimension, Index + 1,
+                             Index - (self.Dimension ** 2 - self.Dimension)]
+                for Opponent in Opponents:
+                    Score += self.CheckSimilar(Index, Opponent)
+
+            elif Index in LeftSide:
+                Score = 0
+                Opponents = [Index - 1 + self.Dimension, Index - self.Dimension, Index + 1, Index + self.Dimension]
+                for Opponent in Opponents:
+                    Score += self.CheckSimilar(Index, Opponent)
+
+            elif Index in RightSide:
+                Score = 0
+                Opponents = [Index - 1, Index - self.Dimension, Index - self.Dimension + 1, Index + self.Dimension]
+                for Opponent in Opponents:
+                    Score += self.CheckSimilar(Index, Opponent)
+
+            else:
+                Score = 0
+                Opponents = [Index - 1, Index - self.Dimension, Index + 1, Index + self.Dimension]
+                for Opponent in Opponents:
+                    Score += self.CheckSimilar(Index, Opponent)
+
+
+            SimilarityDict["Total"].append(Score)
+            SimilarityDict[self.Agents[Index].GetMove()].append(Score)
+
+        for key in SimilarityDict:
+            SimilarityDict[key] = np.mean(SimilarityDict[key])/4
+
+        return SimilarityDict
 
 
 
