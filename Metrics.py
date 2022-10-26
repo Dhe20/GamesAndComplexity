@@ -1,15 +1,13 @@
 from fileinput import filename
 import matplotlib.pyplot as plt
+# import matplotlib; matplotlib.use("TkAgg")
 import pickle
 import numpy as np
 import matplotlib.animation as ani
 import matplotlib.pyplot as plt
 from matplotlib import colors
 
-from Agent import Agent
-from Grid import Grid
-
-class Metrics: #inherits methods 
+class Metrics: #inherits methods
         #weird boilerplate to inherit class variables ...
     def __init__(self, Filename):
 
@@ -39,6 +37,10 @@ class Metrics: #inherits methods
 
     #rps -> rgb
     #make figure
+
+    def GetArray(self):
+        return self.AgentArray
+
     def PlotRPSAmount(self):
         fig, ax = plt.subplots(1,1, figsize =(10,6))
         ax.tick_params(labelsize = 20)
@@ -77,7 +79,7 @@ class Metrics: #inherits methods
         return Array
 
 
-    def AnimateEvolution(self):
+    def AnimateEvolution(self, intervalms=250):
         #WIP 
         fig, ax = plt.subplots(figsize = (5,5))
         colormap = colors.ListedColormap(self.colorlist)
@@ -92,19 +94,131 @@ class Metrics: #inherits methods
             ims.append([im])
 
         animation = ani.ArtistAnimation(
-            fig, ims, interval=250, 
+            fig, ims, interval=intervalms,
             blit=True,repeat_delay=2000
             )
         plt.show()
 
 
-        IterAgentData = self.ListToArray()
+        IterAgentData = self.ListToArrayMetrics(self.AgentArray[i])
         # NEW METRICS GO HERE
         N = np.zeros(3)
         for k in range(3): # find how many RPS at each timestep
             N[k] = np.count_nonzero(AgentData == k-1)
         IterData = [IterAgentData, N] #ADD NEW METRICS TO LIST
 
-x = Metrics('pkl/20_3_ewgwz.pkl')
-x.PlotRPSAmount()
-x.AnimateEvolution()
+    def CheckSimilar(self, iter, IndexA, IndexB):
+        Outcomes = {
+            "RR": 1,
+            "RP": 0,
+            "RS": 0,
+            "PR": 0,
+            "PP": 1,
+            "PS": 0,
+            "SR": 0,
+            "SP": 0,
+            "SS": 1,
+        }
+
+        Move = self.AgentArray[iter][IndexA].GetMove() + self.AgentArray[iter][IndexB].GetMove()
+        ValueFromDict = Outcomes.get(Move)
+        return ValueFromDict
+
+    def PlotSimilarity(self):
+
+        TopLeftCorner = 0
+        TopRightCorner = self.Dimension - 1
+        BottomLeftCorner = self.Dimension ** 2 - self.Dimension
+        BottomRightCorner = self.Dimension ** 2 - 1
+        TopSide = [i for i in range(1, self.Dimension - 1)]
+        BottomSide = [self.Dimension ** 2 - self.Dimension + i for i in range(1, self.Dimension - 1)]
+        LeftSide = [self.Dimension * i for i in range(1, self.Dimension - 1)]
+        RightSide = [self.Dimension - 1 + self.Dimension * i for i in range(1, self.Dimension - 1)]
+
+        SimilarityOverTime = []
+
+        for iter in range(0, self.NoIters):
+            SimilarityDict = {"Total": [], "R": [], "P": [], "S": []}
+
+            for Index in range(0, self.Dimension ** 2):
+                if Index == TopLeftCorner:
+                    Opponents = [1, LeftSide[0], TopRightCorner, BottomLeftCorner]
+                    Score = 0
+                    for Opponent in Opponents:
+                        Score += self.CheckSimilar(iter, Index, Opponent)
+
+                elif Index == TopRightCorner:
+                    Opponents = [Index - 1, RightSide[0], TopLeftCorner, BottomRightCorner]
+                    Score = 0
+                    for Opponent in Opponents:
+                        Score += self.CheckSimilar(iter, Index, Opponent)
+
+                elif Index == BottomLeftCorner:
+                    Opponents = [Index + 1, LeftSide[-1], BottomRightCorner, TopLeftCorner]
+                    Score = 0
+                    for Opponent in Opponents:
+                        Score += self.CheckSimilar(iter, Index, Opponent)
+
+                elif Index == BottomRightCorner:
+                    Opponents = [Index - 1, RightSide[-1], BottomLeftCorner, TopRightCorner]
+                    Score = 0
+                    for Opponent in Opponents:
+                        Score += self.CheckSimilar(iter, Index, Opponent)
+
+                elif Index in TopSide:
+                    Score = 0
+                    Opponents = [Index - 1, Index + self.Dimension, Index + 1,
+                                 Index + (self.Dimension ** 2 - self.Dimension)]
+                    for Opponent in Opponents:
+                        Score += self.CheckSimilar(iter, Index, Opponent)
+
+                elif Index in BottomSide:
+                    Score = 0
+                    Opponents = [Index - 1, Index - self.Dimension, Index + 1,
+                                 Index - (self.Dimension ** 2 - self.Dimension)]
+                    for Opponent in Opponents:
+                        Score += self.CheckSimilar(iter, Index, Opponent)
+
+                elif Index in LeftSide:
+                    Score = 0
+                    Opponents = [Index - 1 + self.Dimension, Index - self.Dimension, Index + 1, Index + self.Dimension]
+                    for Opponent in Opponents:
+                        Score += self.CheckSimilar(iter, Index, Opponent)
+
+                elif Index in RightSide:
+                    Score = 0
+                    Opponents = [Index - 1, Index - self.Dimension, Index - self.Dimension + 1, Index + self.Dimension]
+                    for Opponent in Opponents:
+                        Score += self.CheckSimilar(iter, Index, Opponent)
+
+                else:
+                    Score = 0
+                    Opponents = [Index - 1, Index - self.Dimension, Index + 1, Index + self.Dimension]
+                    for Opponent in Opponents:
+                        Score += self.CheckSimilar(iter, Index, Opponent)
+
+
+                SimilarityDict["Total"].append(Score)
+                SimilarityDict[self.AgentArray[iter][Index].GetMove()].append(Score)
+
+            for key in SimilarityDict:
+                SimilarityDict[key] = np.mean(SimilarityDict[key])/4
+
+            SimilarityOverTime.append(SimilarityDict)
+
+
+        Total = [x['Total'] for x in SimilarityOverTime]
+        Rock = [x['R'] for x in SimilarityOverTime]
+        Paper = [x['P'] for x in SimilarityOverTime]
+        Scissors = [x['S'] for x in SimilarityOverTime]
+
+        plt.plot(Total, color="k")
+        plt.plot(Rock, color="red")
+        plt.plot(Paper, color="Green")
+        plt.plot(Scissors, color="Blue")
+        plt.show()
+
+# x = Metrics('')
+# x.PlotRPSAmount()
+# x.PlotSimilarity()
+# x.AnimateEvolution()

@@ -13,7 +13,7 @@ class Grid:
     # List of Objects (Agent Instances)
     #Dimension is Width of Grid
 
-    def __init__(self, Dimension, EmptyCellFrac = 0, Uniform = False, Ternary = False):
+    def __init__(self, Dimension, EmptyCellCount = 0, Uniform = False, Ternary = False):
         '''
         EmptyCellCount: (int) number of empty cells
         '''
@@ -82,23 +82,6 @@ class Grid:
             "RR" :  0, "RP" : -1, "RS" :  1,
             "PR" :  1, "PP" :  0, "PS" : -1,
             "SR" : -1, "SP" :  1, "SS" :  0,
-        }
-
-        Move = self.Agents[IndexA].GetMove()+self.Agents[IndexB].GetMove()
-        ValueFromDict = Outcomes.get(Move)
-        return ValueFromDict
-
-    def CheckSimilar(self,IndexA,IndexB):
-        Outcomes ={
-            "RR" : 1,
-            "RP" : 0,
-            "RS" : 0,
-            "PR" : 0,
-            "PP" : 1,
-            "PS" : 0,
-            "SR" : 0,
-            "SP" : 0,
-            "SS" : 1,
         }
 
         Move = self.Agents[IndexA].GetMove()+self.Agents[IndexB].GetMove()
@@ -180,7 +163,6 @@ class Grid:
             else:
                 self.Agents[Index].ChangeScore(Score)
                 ScoreList.append(Score)
-
 
         ScoreArray = np.reshape(ScoreList, (self.Dimension,self.Dimension)) # to make analysis a little easier
         return ScoreList, ScoreArray
