@@ -208,9 +208,9 @@ class Grid:
 #Example Script for debugging -> sum of score list should be 0 (net zero game)
 #P.S. comment out before running Iterator
 
-x=Grid(3)
-print(x.Dimension)
-print(x.CheckAllWinners())
-print(sum(x.CheckAllWinners()))
-x.VisualiseGrid()
+# x=Grid(3)
+# print(x.Dimension)
+# print(x.CheckAllWinners())
+# print(sum(x.CheckAllWinners()))
+# x.VisualiseGrid()
 
