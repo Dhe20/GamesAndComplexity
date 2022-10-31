@@ -191,7 +191,7 @@ class Grid:
         #         ScoreList.append(Score)
 
         ScoreArray = np.reshape(ScoreList, (self.Dimension,self.Dimension)) # to make analysis a little easier
-        return ScoreList, ScoreArray
+        return ScoreArray
 
     def CheckAroundAgent(self, index):
         pass
@@ -208,8 +208,9 @@ class Grid:
 #Example Script for debugging -> sum of score list should be 0 (net zero game)
 #P.S. comment out before running Iterator
 
-# x=Grid(3)
-# print(x.Dimension)
-# x.VisualiseGrid()
-# print(x.CheckAllWinners())
-# print(sum(x.CheckAllWinners()))
+x=Grid(3)
+print(x.Dimension)
+print(x.CheckAllWinners())
+print(sum(x.CheckAllWinners()))
+x.VisualiseGrid()
+
