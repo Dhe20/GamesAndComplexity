@@ -40,6 +40,9 @@ class Grid:
                 self.colormap = ["red", "green", "blue", "white"]
 
         self.Agents = AgentList
+        #reshape as an nxn grid instead of a list. you gotta stop using lists :p
+        #this may be what array does
+        self.AgentsGrid = np.array(AgentList).reshape(self.Dimension,self.Dimension)
 
     def GetDimension(self):
         return self.Dimension
@@ -73,9 +76,9 @@ class Grid:
 
     # Checks Winner of Invididual Round
 
-    def CheckWinner(self,IndexA,IndexB):
+    def CheckWinner(self,CrdA,CrdB):
 
-        if self.Agents[IndexA] is None or self.Agents[IndexB] is None:
+        if self.AgentsGrid[CrdA] is None or self.AgentsGrid[CrdB] is None:
             return 0
 
         Outcomes ={
@@ -84,7 +87,7 @@ class Grid:
             "SR" : -1, "SP" :  1, "SS" :  0,
         }
 
-        Move = self.Agents[IndexA].GetMove()+self.Agents[IndexB].GetMove()
+        Move = self.AgentsGrid[CrdA].GetMove()+self.AgentsGrid[CrdB].GetMove()
         ValueFromDict = Outcomes.get(Move)
         return ValueFromDict
 
@@ -97,72 +100,95 @@ class Grid:
 
     def CheckAllWinners(self):
 
+        # ScoreList = []
+
+        # TopLeftCorner = 0
+        # TopRightCorner = self.Dimension - 1
+        # BottomLeftCorner = self.Dimension ** 2 - self.Dimension
+        # BottomRightCorner = self.Dimension ** 2 - 1
+        # TopSide = [i for i in range(1, self.Dimension-1)]
+        # BottomSide = [self.Dimension ** 2 - self.Dimension + i for i in range(1, self.Dimension-1)]
+        # LeftSide = [self.Dimension * i for i in range(1, self.Dimension-1)]
+        # RightSide = [self.Dimension - 1 + self.Dimension * i for i in range(1, self.Dimension-1)]
+        
         ScoreList = []
+        D = self.Dimension #for readability
+        for j in range(0, D):
+            for i in range(0, D):
+                if self.Agents[i+j] is None:
+                    # just adds 0 to this agent
+                    ScoreList.append(0)
+                    continue
+                Score = 0
 
-        TopLeftCorner = 0
-        TopRightCorner = self.Dimension - 1
-        BottomLeftCorner = self.Dimension ** 2 - self.Dimension
-        BottomRightCorner = self.Dimension ** 2 - 1
-        TopSide = [i for i in range(1, self.Dimension-1)]
-        BottomSide = [self.Dimension ** 2 - self.Dimension + i for i in range(1, self.Dimension-1)]
-        LeftSide = [self.Dimension * i for i in range(1, self.Dimension-1)]
-        RightSide = [self.Dimension - 1 + self.Dimension * i for i in range(1, self.Dimension-1)]
+                OppLoc = [ # i <3 modular arithmetic 
+                    ((j)%D, (i+1)%D),
+                    ((j+1)%D, (i)%D),
+                    ((j)%D, (i-1)%D),
+                    ((j-1)%D, (i)%D),
+                    ] #equivalent of a dictionary
 
-        for Index in range(0, self.Dimension**2):
-
-            Score = 0
-
-            if Index == TopLeftCorner:
-                Opponents = [1, LeftSide[0], TopRightCorner, BottomLeftCorner]
-                for Opponent in Opponents:
-                    Score += self.CheckWinner(Index, Opponent)
-
-            elif Index == TopRightCorner:
-                Opponents = [Index - 1, RightSide[0], TopLeftCorner, BottomRightCorner]
-                for Opponent in Opponents:
-                    Score += self.CheckWinner(Index, Opponent)
-
-            elif Index == BottomLeftCorner:
-                Opponents = [Index+1, LeftSide[-1], BottomRightCorner, TopLeftCorner]
-                for Opponent in Opponents:
-                    Score += self.CheckWinner(Index, Opponent)
-
-            elif Index == BottomRightCorner:
-                Opponents = [Index-1, RightSide[-1], BottomLeftCorner, TopRightCorner]
-                for Opponent in Opponents:
-                    Score += self.CheckWinner(Index, Opponent)
-
-            elif Index in TopSide:
-                Opponents = [Index-1, Index+self.Dimension, Index+1, Index + (self.Dimension**2-self.Dimension)]
-                for Opponent in Opponents:
-                    Score += self.CheckWinner(Index, Opponent)
-
-            elif Index in BottomSide:
-                Opponents = [Index - 1, Index - self.Dimension, Index + 1, Index - (self.Dimension ** 2 - self.Dimension)]
-                for Opponent in Opponents:
-                    Score += self.CheckWinner(Index, Opponent)
-
-            elif Index in LeftSide:
-                Opponents = [Index - 1 + self.Dimension, Index - self.Dimension, Index + 1, Index + self.Dimension]
-                for Opponent in Opponents:
-                    Score += self.CheckWinner(Index, Opponent)
-
-            elif Index in RightSide:
-                Opponents = [Index - 1, Index - self.Dimension, Index - self.Dimension + 1, Index + self.Dimension]
-                for Opponent in Opponents:
-                    Score += self.CheckWinner(Index, Opponent)
-
-            else:
-                Opponents = [Index - 1, Index - self.Dimension, Index + 1, Index + self.Dimension]
-                for Opponent in Opponents:
-                    Score += self.CheckWinner(Index, Opponent)
-
-            if self.Agents[Index] is None:
-                # just adds 0 to this agent
+                for k in range(len(OppLoc)):
+                    Score+= self.CheckWinner((j,i), OppLoc[k])
+                self.Agents[D*j+i].ChangeScore(Score) # base D mapping to a base 10 number :o
                 ScoreList.append(Score)
-            else:
-                self.Agents[Index].ChangeScore(Score)
-                ScoreList.append(Score)
+            
+        # for Index in range(0, self.Dimension**2):
+            
+        #     Score = 0
+
+            
+        #     if Index == TopLeftCorner:
+        #         Opponents = [1, LeftSide[0], TopRightCorner, BottomLeftCorner]
+        #         for Opponent in Opponents:
+        #             Score += self.CheckWinner(Index, Opponent)
+
+        #     elif Index == TopRightCorner:
+        #         Opponents = [Index - 1, RightSide[0], TopLeftCorner, BottomRightCorner]
+        #         for Opponent in Opponents:
+        #             Score += self.CheckWinner(Index, Opponent)
+
+        #     elif Index == BottomLeftCorner:
+        #         Opponents = [Index+1, LeftSide[-1], BottomRightCorner, TopLeftCorner]
+        #         for Opponent in Opponents:
+        #             Score += self.CheckWinner(Index, Opponent)
+
+        #     elif Index == BottomRightCorner:
+        #         Opponents = [Index-1, RightSide[-1], BottomLeftCorner, TopRightCorner]
+        #         for Opponent in Opponents:
+        #             Score += self.CheckWinner(Index, Opponent)
+
+        #     elif Index in TopSide:
+        #         Opponents = [Index-1, Index+self.Dimension, Index+1, Index + (self.Dimension**2-self.Dimension)]
+        #         for Opponent in Opponents:
+        #             Score += self.CheckWinner(Index, Opponent)
+
+        #     elif Index in BottomSide:
+        #         Opponents = [Index - 1, Index - self.Dimension, Index + 1, Index - (self.Dimension ** 2 - self.Dimension)]
+        #         for Opponent in Opponents:
+        #             Score += self.CheckWinner(Index, Opponent)
+
+        #     elif Index in LeftSide:
+        #         Opponents = [Index - 1 + self.Dimension, Index - self.Dimension, Index + 1, Index + self.Dimension]
+        #         for Opponent in Opponents:
+        #             Score += self.CheckWinner(Index, Opponent)
+
+        #     elif Index in RightSide:
+        #         Opponents = [Index - 1, Index - self.Dimension, Index - self.Dimension + 1, Index + self.Dimension]
+        #         for Opponent in Opponents:
+        #             Score += self.CheckWinner(Index, Opponent)
+
+        #     else:
+        #         Opponents = [Index - 1, Index - self.Dimension, Index + 1, Index + self.Dimension]
+        #         for Opponent in Opponents:
+        #             Score += self.CheckWinner(Index, Opponent)
+
+        #     if self.Agents[Index] is None:
+        #         # just adds 0 to this agent
+        #         ScoreList.append(Score)
+        #     else:
+        #         self.Agents[Index].ChangeScore(Score)
+        #         ScoreList.append(Score)
 
         ScoreArray = np.reshape(ScoreList, (self.Dimension,self.Dimension)) # to make analysis a little easier
         return ScoreList, ScoreArray
