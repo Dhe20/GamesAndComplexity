@@ -7,11 +7,13 @@ class Agent():
     #Stores data for Individual RPS Agent with fixed Probability Dist & "Scope" to change the Dist.
     #Stores ID & Location (equivalent at t=0), as well as first move.
     #Stores Score of recent round (can be changed to cumulative) starting at 0
-    def __init__(self, index, Uniform = False, Ternary = False):
+    def __init__(self, index, Uniform = False, Ternary = False, Probs = None):
         self.Id = index
         self.Location = index #maybe have these different?
         if Ternary or Uniform:
             self.DistributionAndMove = WeightsAndMoves(Uniform = Uniform, Ternary = Ternary)
+        elif Probs:
+            self.DistributionAndMove = WeightsAndMoves(Probs = Probs)
         else:
             self.DistributionAndMove = WeightsAndMoves(Uniform = True)
         self.Move = self.DistributionAndMove.MakeAMove()

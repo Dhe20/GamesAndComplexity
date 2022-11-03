@@ -176,14 +176,54 @@ class Grid:
         #ScoreArray[:,1][(5)%5]
         pass
 
+    def ThreeWideRows(self):
+        Agents = []
+        for i in range(self.Dimension//3):
+            if i % 3 == 0:
+                Probs = [1,0,0]
+            if i % 3 - 1 == 0:
+                Probs = [0, 1, 0]
+            if i % 3 - 2 == 0:
+                Probs = [0, 0, 1]
+            for j in range(0,3*self.Dimension):
+                Agents.append(Agent(index = i+j,Probs = Probs))
+        self.Agents = Agents
+        return self.Agents
+
+    def ThreeWideRows(self):
+        Agents = []
+        for i in range(self.Dimension//3):
+            if i % 3 == 0:
+                Probs = [1,0,0]
+            if i % 3 - 1 == 0:
+                Probs = [0, 1, 0]
+            if i % 3 - 2 == 0:
+                Probs = [0, 0, 1]
+            for j in range(0,3*self.Dimension):
+                Agents.append(Agent(index = i+j,Probs = Probs))
+        self.Agents = Agents
+        return self.Agents
+
+    def HalfThreeHalfOne(self):
+        Agents = []
+        for i in range(self.Dimension // 3):
+            if (i // 3) < (self.Dimension // 3)/2:
+                if i % 3 == 0:
+                    Probs = [1, 0, 0]
+                if i % 3 - 1 == 0:
+                    Probs = [0, 1, 0]
+                if i % 3 - 2 == 0:
+                    Probs = [0, 0, 1]
+                for j in range(0, 3 * self.Dimension):
+                    Agents.append(Agent(index=i + j, Probs=Probs))
+            self.Agents = Agents
+        return self.Agents
 
 
 
 #Example Script for debugging -> sum of score list should be 0 (net zero game)
 #P.S. comment out before running Iterator
 
-# x=Grid(3)
-# print(x.Dimension)
+# x=Grid(9)
+# x.HalfThreeHalfOne()
 # x.VisualiseGrid()
-# print(x.CheckAllWinners())
-# print(sum(x.CheckAllWinners()))

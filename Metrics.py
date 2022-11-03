@@ -6,18 +6,21 @@ import numpy as np
 import matplotlib.animation as ani
 import matplotlib.pyplot as plt
 from matplotlib import colors
+from scipy.fft import fft, fftfreq
 
 class Metrics: #inherits methods
         #weird boilerplate to inherit class variables ...
-    def __init__(self, Filename):
+    def __init__(self, Filename = "", AgentList = None, Iterator = False):
 
-        if Filename[-4:] != ".pkl":
-            raise ValueError(".pkl only pls")
-        self.filename = Filename
-        
-        #reading data
-        pickle_in = open(Filename, 'rb')
-        self.AgentList = pickle.load(pickle_in)
+        if Iterator:
+            self.AgentList = AgentList
+        else:
+            if Filename[-4:] != ".pkl":
+                raise ValueError(".pkl only pls")
+            self.filename = Filename
+            #reading data
+            pickle_in = open(Filename, 'rb')
+            self.AgentList = pickle.load(pickle_in)
 
         self.AgentArray = np.array(self.AgentList)
         self.NoIters = len(self.AgentArray)
@@ -123,6 +126,51 @@ class Metrics: #inherits methods
         Move = self.AgentArray[iter][IndexA].GetMove() + self.AgentArray[iter][IndexB].GetMove()
         ValueFromDict = Outcomes.get(Move)
         return ValueFromDict
+
+    def PlotPerodicity(self, cutoff = 50):
+
+        fig, ax = plt.subplots(1, 1, figsize=(10, 6))
+        ax.tick_params(labelsize=20)
+
+        tsteps = np.linspace(0, self.NoIters, self.NoIters)  # is there a better way to do this?
+        # need to change this to account for empty cells
+        N = np.zeros((3, self.NoIters))
+        for j in range(cutoff,self.NoIters):
+            for i in range(self.NoAgents):
+                if self.AgentArray[j][i] is None:
+                    continue
+                Move = self.AgentArray[j][i].GetMove()
+                N[self.KeyMapping.get(Move)][j] += 1
+
+
+        #Slice final 20% of data for steady state periodicity
+
+        SteadyStateSliceRock = N[0]
+        SteadyStateSlicePaper = N[1]
+        SteadyStateSliceScissors = N[2]
+
+        #FFT Total, R, P, S
+
+        N=len(SteadyStateSliceRock)
+        yfRock = fft(SteadyStateSliceRock)
+        yfPaper = fft(SteadyStateSlicePaper)
+        yfScissors = fft(SteadyStateSliceScissors)
+
+        xf = fftfreq(N, 1)[:N // 2]
+
+        plt.plot(xf, (2.0 / N) * np.abs(yfRock[0:N // 2]), color='red', label='Rock', ls = "--")
+        plt.plot(xf, (2.0 / N) * np.abs(yfRock[0:N // 2]), color='green', label='Paper', ls = "dashdot")
+        plt.plot(xf, (2.0 / N) * np.abs(yfRock[0:N // 2]), color='blue', label='Scissors', ls = "dotted")
+        plt.grid()
+        ax.legend(title='', prop={'size': 8})
+        # plt.savefig('.png', dpi = 600)
+        plt.show()
+
+
+
+
+        #Output plot of FFT
+
 
     def PlotSimilarity(self):
 

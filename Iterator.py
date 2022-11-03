@@ -18,12 +18,21 @@ class Iterator(Grid):
     def __init__(self, Dimension, NumberOfSteps, Uniform = False, Ternary = False, EmptyCellCount=0):
 
         #Take all of Grid's methods and attributes:
-        super().__init__(Dimension, EmptyCellCount, Uniform = Uniform, Ternary=Ternary)
-
+        super().__init__(
+                        Dimension = Dimension, EmptyCellCount = EmptyCellCount,
+                         Uniform = Uniform, Ternary = Ternary)
         #Adding storage for PKL and iterations
         self.Iterations = NumberOfSteps
         self.FileName = ""
         self.AlreadyRun = False
+        self.AllData = []
+
+        FilenameData = [str(self.GetNumberOfSteps()),
+                        str(self.GetDimension()),
+                        ''.join(random.choice(string.ascii_lowercase) for i in range(5)), ]
+        # create a local /pkl dir
+        # pkl/NoIterations_GridSize_5letterstring.pkl
+        self.Filename = "pkl/" + FilenameData[0] + '_' + FilenameData[1] + '_' + FilenameData[-1] + '.pkl'
 
     def GetNumberOfSteps(self):
         return self.Iterations
@@ -31,14 +40,11 @@ class Iterator(Grid):
     def Run(self, SaveData = False, KillOrBeKilled = False, KillOrBeKilledAndLearn = False):
 
         # save data
-        if SaveData == True:
-            AllData = []
 
         for i in tqdm(range(0, self.Iterations)):
 
-            if SaveData == True:
-                localcopy = copy.deepcopy(self.Agents)
-                AllData.append(localcopy)
+            localcopy = copy.deepcopy(self.Agents)
+            self.AllData.append(localcopy)
 
 
             ScoreArray = self.CheckAllWinners()[1]
@@ -48,20 +54,15 @@ class Iterator(Grid):
             self.UpdateAllMoves()
             self.UpdateSomePositions(self.ListToArray(), ScoreArray)#for dying away and moving
 
-        if SaveData == True:
-            #add any other data to the filename here
-            FilenameData = [str(self.GetNumberOfSteps()),
-                            str(self.GetDimension()),
-                            ''.join(random.choice(string.ascii_lowercase) for i in range(5)),]
-            #create a local /pkl dir
-            #pkl/NoIterations_GridSize_5letterstring.pkl
-            Filename = "pkl/"+FilenameData[0]+'_'+FilenameData[1]+'_'+FilenameData[-1]+'.pkl'
-            print('saved at ', Filename)
-            pickle_out = open(Filename, 'wb')
-            pk.dump(AllData, pickle_out)
-            pickle_out.close()
-            self.FileName = Filename
-            self.AlreadyRun = True
+            if SaveData:
+                self.SaveData()
+
+    def SaveData(self):
+        print('saved at ', self.Filename)
+        pickle_out = open(self.Filename, 'wb')
+        pk.dump(self.AllData, pickle_out)
+        pickle_out.close()
+        self.AlreadyRun = True
 
     def GetFileName(self):
         return self.FileName
@@ -120,6 +121,8 @@ class Iterator(Grid):
             NewDist = self.Agents[i].GetProbabilityDist()
         return NewDist
 
+    def Metrics(self):
+        return Metrics(AgentList = self.AllData, Iterator = True)
 
 
 
