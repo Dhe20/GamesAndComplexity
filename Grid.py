@@ -62,6 +62,47 @@ class Grid:
 
         return np.array(Array)
 
+    def CreateEmptyRowCol(self, RoworCol, WhichRowCol): #these var names could be better
+        '''
+        also overwrites self.Agents
+        '''
+        RoworColDict = {
+            "R": self.AgentsGrid[WhichRowCol],
+            "C": self.AgentsGrid[:,WhichRowCol]
+        }
+        #the dictionary agents point to the same part in memory, so should be ok
+        AgentstoChange = RoworColDict.get(RoworCol) 
+        for i in range(self.Dimension):
+            AgentstoChange[i] = None
+        self.Agents = self.AgentsGrid.flatten().tolist()
+        #ensures correct colormapping in case 
+        self.KeyMapping = {"R": -1, "P": 0, "S": 1, "E": 2}
+        self.colormap = ["red", "green", "blue", "white"]
+
+    def CreateEmptyDiagonal(self, UporDown):
+        '''
+        startingcell - coordinate
+        
+        '''
+        # up down as in +ve / -ve gradient
+        UporDownDict = {
+            "U" : -1, 
+            "D" : 1
+        }
+        # for readbility
+        k = UporDownDict.get(UporDown)
+        D = self.Dimension
+        if k == 1: #D
+            C0 = [0,0]
+        if k == -1:
+            C0 = [0,D-1]
+        #loop over 
+        for i in range(D):
+            self.AgentsGrid[(C0[0]+k*i)%D][(C0[1]+i)%D] = None 
+
+        self.Agents = self.AgentsGrid.flatten().tolist()
+        self.KeyMapping = {"R": -1, "P": 0, "S": 1, "E": 2}
+        self.colormap = ["red", "green", "blue", "white"]
     #Visualises Grid
 
     def VisualiseGrid(self):
@@ -115,7 +156,7 @@ class Grid:
         D = self.Dimension #for readability
         for j in range(0, D):
             for i in range(0, D):
-                if self.Agents[i+j] is None:
+                if self.Agents[D*j+i] is None:
                     # just adds 0 to this agent
                     ScoreList.append(0)
                     continue
@@ -195,8 +236,6 @@ class Grid:
 
     def CheckAroundAgent(self, index):
         pass
-
-
 
     def UpdateSomePositions(self, AgentData, ScoreArray):
         #ScoreArray[:,1][(5)%5]

@@ -108,6 +108,9 @@ class Metrics: #inherits methods
         IterData = [IterAgentData, N] #ADD NEW METRICS TO LIST
 
     def CheckSimilar(self, iter, IndexA, IndexB):
+        if self.AgentArray[iter][IndexA] is None or self.AgentArray[iter][IndexB] is None:
+            return 0
+
         Outcomes = {
             "RR": 1,
             "RP": 0,
@@ -199,6 +202,9 @@ class Metrics: #inherits methods
 
 
                 SimilarityDict["Total"].append(Score)
+                if self.AgentArray[iter][Index] is None:
+                    continue
+                
                 SimilarityDict[self.AgentArray[iter][Index].GetMove()].append(Score)
 
             for key in SimilarityDict:
