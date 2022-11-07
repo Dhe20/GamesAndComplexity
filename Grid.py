@@ -339,7 +339,7 @@ class Grid:
         self.Agents = Agents
         return self.Agents
 
-    def CubeRock(self):
+    def SquareRock(self):
         Agents = []
         for i in range(0, self.Dimension // 3):
             for j in range(0, self.Dimension):
