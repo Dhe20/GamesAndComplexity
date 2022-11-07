@@ -54,8 +54,8 @@ class Iterator(Grid):
             self.UpdateAllMoves()
             self.UpdateSomePositions(self.ListToArray(), ScoreArray)#for dying away and moving
 
-            if SaveData:
-                self.SaveData()
+        if SaveData:
+            self.SaveData()
 
     def SaveData(self):
         print('saved at ', self.Filename)

@@ -28,10 +28,10 @@ class Metrics: #inherits methods
         self.Dimension = int(np.sqrt(self.NoAgents))
 
         if None in self.AgentArray: #no need for == True is funny
-            self.KeyMapping = {"R": -1, "P": 0, "S": 1, "E": 2}
+            self.KeyMapping = {"R": 0, "P": 1, "S": 2, "E": 3}
             self.colorlist = ["red", "green", "blue", "white"]
         else:
-            self.KeyMapping = {"R": -1, "P": 0, "S": 1}
+            self.KeyMapping = {"R": 0, "P": 1, "S": 2}
             self.colorlist = ["red", "green", "blue"]
         # dk what this is doing
         # AgentCount = self.AgentArray[0][1]
@@ -64,6 +64,33 @@ class Metrics: #inherits methods
         ax.plot(tsteps, N[0]+N[1]+N[2] , color = 'black', label = 'Total')
         ax.legend(title = '', prop={'size': 8})
         #plt.savefig('.png', dpi = 600)
+        plt.show()
+
+    def PlotNormRPSAmount(self):
+        fig, ax = plt.subplots(1, 1, figsize=(10, 6))
+        ax.tick_params(labelsize=20)
+
+        tsteps = np.linspace(0, self.NoIters, self.NoIters)  # is there a better way to do this?
+        # need to change this to account for empty cells
+        N = np.zeros((3, self.NoIters))
+        for j in range(self.NoIters):
+            for i in range(self.NoAgents):
+                if self.AgentArray[j][i] is None:
+                    continue
+                Move = self.AgentArray[j][i].GetMove()
+                N[self.KeyMapping.get(Move)][j] += 1
+
+        N[0] = N[0] - np.mean(N[0])
+        N[1] = N[1] - np.mean(N[1])
+        N[2] = N[2] - np.mean(N[2])
+
+
+        ax.plot(tsteps, N[0], color='red', label='Rock')
+        ax.plot(tsteps, N[1], color='green', label='Paper')
+        ax.plot(tsteps, N[2], color='blue', label='Scissors')
+        ax.plot(tsteps, N[0] + N[1] + N[2], color='black', label='Total')
+        ax.legend(title='', prop={'size': 8})
+        # plt.savefig('.png', dpi = 600)
         plt.show()
 
     def ListToArrayMetrics(self, AgentIteration):
@@ -127,7 +154,7 @@ class Metrics: #inherits methods
         ValueFromDict = Outcomes.get(Move)
         return ValueFromDict
 
-    def PlotPerodicity(self, cutoff = 50):
+    def PlotPeriodicity(self, cutoff = 50):
 
         fig, ax = plt.subplots(1, 1, figsize=(10, 6))
         ax.tick_params(labelsize=20)
@@ -145,9 +172,9 @@ class Metrics: #inherits methods
 
         #Slice final 20% of data for steady state periodicity
 
-        SteadyStateSliceRock = N[0]
-        SteadyStateSlicePaper = N[1]
-        SteadyStateSliceScissors = N[2]
+        SteadyStateSliceRock = N[0] - np.mean(N[0])
+        SteadyStateSlicePaper = N[1] - np.mean(N[1])
+        SteadyStateSliceScissors = N[2] - np.mean(N[2])
 
         #FFT Total, R, P, S
 
@@ -159,8 +186,8 @@ class Metrics: #inherits methods
         xf = fftfreq(N, 1)[:N // 2]
 
         plt.plot(xf, (2.0 / N) * np.abs(yfRock[0:N // 2]), color='red', label='Rock', ls = "--")
-        plt.plot(xf, (2.0 / N) * np.abs(yfRock[0:N // 2]), color='green', label='Paper', ls = "dashdot")
-        plt.plot(xf, (2.0 / N) * np.abs(yfRock[0:N // 2]), color='blue', label='Scissors', ls = "dotted")
+        plt.plot(xf, (2.0 / N) * np.abs(yfPaper[0:N // 2]), color='green', label='Paper', ls = "dashdot")
+        plt.plot(xf, (2.0 / N) * np.abs(yfScissors[0:N // 2]), color='blue', label='Scissors', ls = "dotted")
         plt.grid()
         ax.legend(title='', prop={'size': 8})
         # plt.savefig('.png', dpi = 600)

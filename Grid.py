@@ -190,40 +190,110 @@ class Grid:
         self.Agents = Agents
         return self.Agents
 
-    def ThreeWideRows(self):
+    def TenWideRows(self):
         Agents = []
-        for i in range(self.Dimension//3):
+        for i in range(self.Dimension//10):
             if i % 3 == 0:
                 Probs = [1,0,0]
             if i % 3 - 1 == 0:
                 Probs = [0, 1, 0]
             if i % 3 - 2 == 0:
                 Probs = [0, 0, 1]
-            for j in range(0,3*self.Dimension):
+            for j in range(0,10*self.Dimension):
                 Agents.append(Agent(index = i+j,Probs = Probs))
         self.Agents = Agents
         return self.Agents
 
-    def HalfThreeHalfOne(self):
+    def HalfThreeWideRows(self):
         Agents = []
-        for i in range(self.Dimension // 3):
-            if (i // 3) < (self.Dimension // 3)/2:
-                if i % 3 == 0:
-                    Probs = [1, 0, 0]
-                if i % 3 - 1 == 0:
-                    Probs = [0, 1, 0]
-                if i % 3 - 2 == 0:
-                    Probs = [0, 0, 1]
-                for j in range(0, 3 * self.Dimension):
-                    Agents.append(Agent(index=i + j, Probs=Probs))
-            self.Agents = Agents
+        for i in range((self.Dimension // 3)//2):
+            if i % 3 == 0:
+                Probs = [1, 0, 0]
+            if i % 3 - 1 == 0:
+                Probs = [0, 1, 0]
+            if i % 3 - 2 == 0:
+                Probs = [0, 0, 1]
+            for j in range(0, 3 * self.Dimension):
+                Agents.append(Agent(index=i + j, Probs=Probs))
+        for i in range(self.Dimension**2 - len(Agents)):
+            Agents.append(Agent(index = len(Agents) + i))
+        self.Agents = Agents
         return self.Agents
 
+    def HalfThreeWideRowsHalfSingle(self):
+        Agents = []
+        for i in range((self.Dimension // 3)//2+1):
+            if i % 3 == 0:
+                Probs = [1, 0, 0]
+            if i % 3 - 1 == 0:
+                Probs = [0, 1, 0]
+            if i % 3 - 2 == 0:
+                Probs = [0, 0, 1]
+            for j in range(0, 3 * self.Dimension):
+                Agents.append(Agent(index=i + j, Probs=Probs))
+        Num = len(Agents)
+        for i in range(self.Dimension - int(Num/self.Dimension)):
+            if i % 3 == 0:
+                Probs = [1, 0, 0]
+            if i % 3 - 1 == 0:
+                Probs = [0, 1, 0]
+            if i % 3 - 2 == 0:
+                Probs = [0, 0, 1]
+            for j in range(0, self.Dimension):
+                Agents.append(Agent(index= Num + i + j, Probs=Probs))
+        self.Agents = Agents
+        return self.Agents
+
+    def HalfRockHalfRandom(self):
+        Agents = []
+        for i in range(0, self.Dimension//2):
+            for j in range(0, self.Dimension):
+                Agents.append(Agent(index = i + j, Probs = [1,0,0]))
+        Num = len(Agents)
+        for i in range(self.Dimension ** 2 - Num):
+            Agents.append(Agent(index = Num + i))
+        self.Agents = Agents
+        return self.Agents
+
+
+    def ThirdRock(self):
+        Agents = []
+        for i in range(0, self.Dimension//3):
+            for j in range(0, self.Dimension):
+                Agents.append(Agent(index = i + j))
+        Num = len(Agents)
+        for i in range(0, self.Dimension//3):
+            for j in range(0, self.Dimension):
+                Agents.append(Agent(index = Num + i + j, Probs = [1,0,0]))
+        Num = len(Agents)
+        for i in range(0, self.Dimension - int(Num/self.Dimension)):
+            for j in range(0, self.Dimension):
+                Agents.append(Agent(index = Num + i + j))
+        self.Agents = Agents
+        return self.Agents
+
+    def CubeRock(self):
+        Agents = []
+        for i in range(0, self.Dimension // 3):
+            for j in range(0, self.Dimension):
+                Agents.append(Agent(index=i + j))
+        Num = len(Agents)
+        for i in range(0, self.Dimension // 3):
+            for j in range(0, self.Dimension):
+                if j > self.Dimension//3 and j < 2*self.Dimension//3:
+                    Agents.append(Agent(index=Num + i + j, Probs=[1, 0, 0]))
+                else: Agents.append(Agent(index=Num + i + j))
+        Num = len(Agents)
+        for i in range(0, self.Dimension - int(Num / self.Dimension)):
+            for j in range(0, self.Dimension):
+                Agents.append(Agent(index=Num + i + j))
+        self.Agents = Agents
+        return self.Agents
 
 
 #Example Script for debugging -> sum of score list should be 0 (net zero game)
 #P.S. comment out before running Iterator
-
-# x=Grid(9)
-# x.HalfThreeHalfOne()
+#
+# x=Grid(30)
+# x.HalfThreeWideRowsHalfSingle()
 # x.VisualiseGrid()
