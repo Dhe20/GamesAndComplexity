@@ -62,9 +62,9 @@ class WeightsAndMoves:
     def Random(self):
         return choices(["R", "P", "S"], self.Probs)[0]
 
-    def UpdateDist(self):
+    def UpdateDist(self, Probs):
         #FunkyFunction
-        self.Probs = self.Probs
+        self.Probs = Probs
         return self.Probs
 
 

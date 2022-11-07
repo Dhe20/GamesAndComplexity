@@ -237,8 +237,6 @@ class Grid:
     def CheckAroundAgent(self, index):
         pass
 
-
-
     def UpdateSomePositions(self, AgentData, ScoreArray):
         #ScoreArray[:,1][(5)%5]
         pass
@@ -255,6 +253,22 @@ class Grid:
             for j in range(0,3*self.Dimension):
                 Agents.append(Agent(index = i+j,Probs = Probs))
         self.Agents = Agents
+        self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
+        return self.Agents
+
+    def OneWideRows(self):
+        Agents = []
+        for i in range(self.Dimension):
+            if i % 3 == 0:
+                Probs = [1,0,0]
+            if i % 3 - 1 == 0:
+                Probs = [0, 1, 0]
+            if i % 3 - 2 == 0:
+                Probs = [0, 0, 1]
+            for j in range(0,self.Dimension):
+                Agents.append(Agent(index = i+j,Probs = Probs))
+        self.Agents = Agents
+        self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension,self.Dimension)
         return self.Agents
 
     def TenWideRows(self):
@@ -269,6 +283,7 @@ class Grid:
             for j in range(0,10*self.Dimension):
                 Agents.append(Agent(index = i+j,Probs = Probs))
         self.Agents = Agents
+        self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
         return self.Agents
 
     def HalfThreeWideRows(self):
@@ -285,6 +300,7 @@ class Grid:
         for i in range(self.Dimension**2 - len(Agents)):
             Agents.append(Agent(index = len(Agents) + i))
         self.Agents = Agents
+        self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
         return self.Agents
 
     def HalfThreeWideRowsHalfSingle(self):
@@ -309,6 +325,7 @@ class Grid:
             for j in range(0, self.Dimension):
                 Agents.append(Agent(index= Num + i + j, Probs=Probs))
         self.Agents = Agents
+        self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
         return self.Agents
 
     def HalfRockHalfRandom(self):
@@ -320,6 +337,7 @@ class Grid:
         for i in range(self.Dimension ** 2 - Num):
             Agents.append(Agent(index = Num + i))
         self.Agents = Agents
+        self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
         return self.Agents
 
 
@@ -337,6 +355,7 @@ class Grid:
             for j in range(0, self.Dimension):
                 Agents.append(Agent(index = Num + i + j))
         self.Agents = Agents
+        self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
         return self.Agents
 
     def SquareRock(self):
@@ -355,12 +374,9 @@ class Grid:
             for j in range(0, self.Dimension):
                 Agents.append(Agent(index=Num + i + j))
         self.Agents = Agents
+        self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
         return self.Agents
 
 
 #Example Script for debugging -> sum of score list should be 0 (net zero game)
 #P.S. comment out before running Iterator
-#
-# x=Grid(30)
-# x.HalfThreeWideRowsHalfSingle()
-# x.VisualiseGrid()

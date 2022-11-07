@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 import time;
 
 x = Iterator(30, 100, Ternary = True)
-x.HalfThreeWideRowsHalfSingle()
+x.ThreeWideRows()
 x.VisualiseGrid()
 x.Run(SaveData = False, KillOrBeKilledAndLearn = True)
-x.Metrics().AnimateEvolution(100)
+x.Metrics().AnimateEvolution(10)
 # x.Metrics().PlotRPSAmount()
 # # x.Metrics().PlotNormRPSAmount()
 # x.Metrics().PlotPeriodicity(cutoff = 100)
