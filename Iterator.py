@@ -24,7 +24,7 @@ class Iterator(Grid):
         #Adding storage for PKL and iterations
         self.Iterations = NumberOfSteps
         self.FileName = ""
-        self.AlreadyRun = False
+        self.AlreadyRun = False 
         self.AllData = []
 
         FilenameData = [str(self.GetNumberOfSteps()),
@@ -37,7 +37,9 @@ class Iterator(Grid):
     def GetNumberOfSteps(self):
         return self.Iterations
 
-    def Run(self, SaveData = False, KillOrBeKilled = False, KillOrBeKilledAndLearn = False):
+    def Run(self, 
+    SaveData = False, KillOrBeKilled = False, 
+    KillOrBeKilledAndLearn = False, Convert = False):
 
         # save data
 
@@ -45,17 +47,14 @@ class Iterator(Grid):
 
             localcopy = copy.deepcopy(self.Agents)
             self.AllData.append(localcopy)
-
-
             ScoreArray = self.CheckAllWinners()[1]
             self.CheckAllWinners()
             #i as an argument to add timed decay
-            self.UpdateAllDists(i, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn)
+            self.UpdateAllDists(i, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn, Convert = Convert)
             self.UpdateAllMoves()
-            self.UpdateSomePositions(self.ListToArray(), ScoreArray)#for dying away and moving
-
-        if SaveData:
-            self.SaveData()
+            #self.UpdateSomePositions(self.ListToArray(), ScoreArray)#for dying away and moving
+            
+        
 
     def SaveData(self):
         print('saved at ', self.Filename)
@@ -76,32 +75,40 @@ class Iterator(Grid):
         return self.Agents
 
     # Use scores to adjust each individual Agent's distribution
-    def UpdateAllDists(self, TimeStep, KillOrBeKilled = False, KillOrBeKilledAndLearn = False):
-        for i in range(0, len(self.Agents)):
-            if self.Agents[i] is None:
-                continue
+    def UpdateAllDists(self, TimeStep, KillOrBeKilled = False, KillOrBeKilledAndLearn = False, Convert = False):
+        for j in range(0, self.Dimension): #changed this loop to make it easier to convert adj cell
+            for i in range(self.Dimension):
+                k = self.Dimension*j+i
+                if self.Agents[k] is None:
+                    continue
 
-            RecentScore = self.Agents[i].GetRecentScore()
-            TotalScore = self.Agents[i].GetTotalScore()
-            RecentMove = self.Agents[i].GetMove()
+                RecentScore = self.Agents[k].GetRecentScore()
+                TotalScore = self.Agents[k].GetTotalScore()
+                RecentMove = self.Agents[k].GetMove()
 
-            # RPStoOIX = {
-            #     "R" : "O",
-            #     "P" : "I",
-            #     "S" : "X",
-            # }
-            # RecentMove = RPStoOIX.get(RecentMove)
+                # RPStoOIX = {
+                #     "R" : "O",
+                #     "P" : "k",
+                #     "S" : "X",
+                # }
+                # RecentMove = RPStoOIX.get(RecentMove)
 
-            if KillOrBeKilled:
-                NewDist = self.KillOrBeKilled(i, RecentScore, TotalScore, RecentMove)
+                if KillOrBeKilled:
+                    NewDist = self.KillOrBeKilled(k, RecentScore, TotalScore, RecentMove)
 
-            elif KillOrBeKilledAndLearn:
-                NewDist = self.KillOrBeKilledAndLearn(i, RecentScore, TotalScore, RecentMove)
+                elif KillOrBeKilledAndLearn:
+                    NewDist = self.KillOrBeKilledAndLearn(k, RecentScore, TotalScore, RecentMove)
 
-            else:
-                NewDist = self.Agents[i].GetProbabilityDist()
 
-            self.Agents[i].ChangeDist(NewDist)
+                else:
+                    NewDist = self.Agents[k].GetProbabilityDist()
+                
+                
+                self.Agents[k].ChangeDist(NewDist)
+        #may have to do this in another loop
+                if Convert:
+                    self.ConvertEmptyCell(j,i)
+           
 
 
     def KillOrBeKilled(self, i, RecentScore, TotalScore, RecentMove):
@@ -121,8 +128,36 @@ class Iterator(Grid):
             NewDist = self.Agents[i].GetProbabilityDist()
         return NewDist
 
+    def ConvertEmptyCell(self, j,i, Prob = 0.5):
+        '''
+        Prob - probability of conversion
+        '''
+
+        D = self.Dimension
+        OppLoc = [ # i <3 modular arithmetic
+                    ((j)%D, (i+1)%D),
+                    ((j+1)%D, (i)%D),
+                    ((j)%D, (i-1)%D),
+                    ((j-1)%D, (i)%D),
+                    ] #equivalent of a dictionary
+
+        for k in range(len(OppLoc)):
+            Outcome = random.choices([0,1], weights = [Prob, 1-Prob])[0] 
+            if Outcome == 1:
+                continue
+            elif Outcome == 0:
+                randloc = random.choices(OppLoc)[0]
+                if self.AgentsGrid[randloc] is None:
+                    AgentCopy = copy.deepcopy(self.AgentsGrid[j,i])
+                    self.AgentsGrid[randloc] = AgentCopy
+                    self.Agents = self.AgentsGrid.flatten().tolist()
+                    break
+        
+    
+
+
+    
     def Metrics(self):
         return Metrics(AgentList = self.AllData, Iterator = True)
-
 
 

@@ -141,17 +141,6 @@ class Grid:
 
     def CheckAllWinners(self):
 
-        # ScoreList = []
-
-        # TopLeftCorner = 0
-        # TopRightCorner = self.Dimension - 1
-        # BottomLeftCorner = self.Dimension ** 2 - self.Dimension
-        # BottomRightCorner = self.Dimension ** 2 - 1
-        # TopSide = [i for i in range(1, self.Dimension-1)]
-        # BottomSide = [self.Dimension ** 2 - self.Dimension + i for i in range(1, self.Dimension-1)]
-        # LeftSide = [self.Dimension * i for i in range(1, self.Dimension-1)]
-        # RightSide = [self.Dimension - 1 + self.Dimension * i for i in range(1, self.Dimension-1)]
-
         ScoreList = []
         D = self.Dimension #for readability
         for j in range(0, D):
@@ -174,62 +163,6 @@ class Grid:
                 self.Agents[D*j+i].ChangeScore(Score) # base D mapping to a base 10 number :o
                 ScoreList.append(Score)
 
-        # for Index in range(0, self.Dimension**2):
-
-        #     Score = 0
-
-
-        #     if Index == TopLeftCorner:
-        #         Opponents = [1, LeftSide[0], TopRightCorner, BottomLeftCorner]
-        #         for Opponent in Opponents:
-        #             Score += self.CheckWinner(Index, Opponent)
-
-        #     elif Index == TopRightCorner:
-        #         Opponents = [Index - 1, RightSide[0], TopLeftCorner, BottomRightCorner]
-        #         for Opponent in Opponents:
-        #             Score += self.CheckWinner(Index, Opponent)
-
-        #     elif Index == BottomLeftCorner:
-        #         Opponents = [Index+1, LeftSide[-1], BottomRightCorner, TopLeftCorner]
-        #         for Opponent in Opponents:
-        #             Score += self.CheckWinner(Index, Opponent)
-
-        #     elif Index == BottomRightCorner:
-        #         Opponents = [Index-1, RightSide[-1], BottomLeftCorner, TopRightCorner]
-        #         for Opponent in Opponents:
-        #             Score += self.CheckWinner(Index, Opponent)
-
-        #     elif Index in TopSide:
-        #         Opponents = [Index-1, Index+self.Dimension, Index+1, Index + (self.Dimension**2-self.Dimension)]
-        #         for Opponent in Opponents:
-        #             Score += self.CheckWinner(Index, Opponent)
-
-        #     elif Index in BottomSide:
-        #         Opponents = [Index - 1, Index - self.Dimension, Index + 1, Index - (self.Dimension ** 2 - self.Dimension)]
-        #         for Opponent in Opponents:
-        #             Score += self.CheckWinner(Index, Opponent)
-
-        #     elif Index in LeftSide:
-        #         Opponents = [Index - 1 + self.Dimension, Index - self.Dimension, Index + 1, Index + self.Dimension]
-        #         for Opponent in Opponents:
-        #             Score += self.CheckWinner(Index, Opponent)
-
-        #     elif Index in RightSide:
-        #         Opponents = [Index - 1, Index - self.Dimension, Index - self.Dimension + 1, Index + self.Dimension]
-        #         for Opponent in Opponents:
-        #             Score += self.CheckWinner(Index, Opponent)
-
-        #     else:
-        #         Opponents = [Index - 1, Index - self.Dimension, Index + 1, Index + self.Dimension]
-        #         for Opponent in Opponents:
-        #             Score += self.CheckWinner(Index, Opponent)
-
-        #     if self.Agents[Index] is None:
-        #         # just adds 0 to this agent
-        #         ScoreList.append(Score)
-        #     else:
-        #         self.Agents[Index].ChangeScore(Score)
-        #         ScoreList.append(Score)
 
         ScoreArray = np.reshape(ScoreList, (self.Dimension,self.Dimension)) # to make analysis a little easier
         return ScoreArray
@@ -376,6 +309,38 @@ class Grid:
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
         return self.Agents
+    
+    def EmptyGrid(self):
+
+        for i in range(len(self.Agents)):
+            self.Agents[i] = None
+        self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
+        self.KeyMapping = {"R": -1, "P": 0, "S": 1, "E": 2}
+        self.colormap = ["red", "green", "blue", "white"]
+        return self.Agents
+
+    def AddAgent(self, playtype, loc = None, Uniform = False, Ternary = False, Probs = None):
+        '''
+        has same inputs as AgentClass init
+        '''
+        probdict = {
+            "R" : [1,0,0],
+            "P" : [0,1,0],
+            "S" : [0,0,1],
+        }
+        if Probs is None:
+            Probs = probdict.get(playtype)
+
+        if loc is None:
+            locx = random.randint(0,self.Dimension)
+            locy = random.randint(0,self.Dimension)
+        else:
+            locx, locy = loc
+
+        index = self.Dimension * locx + locy # mapping from grid to flattened array
+
+        self.AgentsGrid[locy, locx] = Agent(index, Uniform, Ternary, Probs) 
+        self.Agents = self.AgentsGrid.flatten().tolist()
 
 
 #Example Script for debugging -> sum of score list should be 0 (net zero game)
