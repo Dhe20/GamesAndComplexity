@@ -27,12 +27,10 @@ class Metrics: #inherits methods
         self.NoAgents = len(self.AgentArray.T)#take the transpose
         self.Dimension = int(np.sqrt(self.NoAgents))
 
-        if None in self.AgentArray: #no need for == True is funny
-            self.KeyMapping = {"R": 0, "P": 1, "S": 2, "E": 3}
-            self.colorlist = ["red", "green", "blue", "white"]
-        else:
-            self.KeyMapping = {"R": 0, "P": 1, "S": 2}
-            self.colorlist = ["red", "green", "blue"]
+
+        self.KeyMapping = {"R": 0, "P": 1, "S": 2}
+        self.colorlist = ["red", "green", "blue", "white"]
+
         # dk what this is doing
         # AgentCount = self.AgentArray[0][1]
         # for i in range(len(data)-1):
@@ -99,7 +97,7 @@ class Metrics: #inherits methods
             ArrayFile = []
             for j in range(0, self.Dimension):
                 if AgentIteration[self.Dimension * i + j] is None:
-                    ArrayFile.append(2)
+                    ArrayFile.append(3)
                     continue
                 ArrayElement = AgentIteration[self.Dimension * i + j].GetMove()
                 ArrayFile.append(self.KeyMapping[ArrayElement])
@@ -112,12 +110,13 @@ class Metrics: #inherits methods
     def AnimateEvolution(self, intervalms=250):
         #WIP 
         fig, ax = plt.subplots(figsize = (5,5))
-        colormap = colors.ListedColormap(self.colorlist)
         ims = []
-        #MoveDict = {"R": -1, "P": 1, "S": 2, "E": 3} self.movedict
+
         Grid = np.zeros(self.NoAgents)
         for i in range(self.NoIters):
             AgentData = self.ListToArrayMetrics(self.AgentArray[i])
+            ColorsOnBoard = self.GetAllColors(AgentData)
+            colormap = colors.ListedColormap(ColorsOnBoard)
             # Dim = int(np.sqrt(len(AgentData)))
             # AgentData = AgentData.reshape((Dim, Dim))
             im = ax.imshow(AgentData, cmap=colormap, animated = True)
@@ -298,6 +297,18 @@ class Metrics: #inherits methods
         plt.plot(Paper, color="Green")
         plt.plot(Scissors, color="Blue")
         plt.show()
+
+    def GetAllColors(self, AgentData):
+        AgentColors = []
+        ColorsOnBoard = []
+        for Row in AgentData:
+            for Agent in Row:
+                AgentColors.append(Agent)
+        UniqueMovesPresent = list(set(AgentColors))
+        for UniqueMove in UniqueMovesPresent:
+            ColorsOnBoard.append(self.colorlist[UniqueMove])
+        return ColorsOnBoard
+
 
 # x = Metrics('')
 # x.PlotRPSAmount()

@@ -42,6 +42,7 @@ class WeightsAndMoves:
         if Probs == None:
             Probs = self.Probs
         if sum(Probs) != 1:
+            print(Probs)
             raise ValueError("not normed!")
 
     def GetProbs(self):

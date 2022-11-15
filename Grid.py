@@ -3,6 +3,7 @@ from matplotlib import colors;
 from Agent import Agent;
 import numpy as np;
 import random
+from copy import deepcopy
 
 class Grid:
 
@@ -19,8 +20,8 @@ class Grid:
         '''
 
         self.Dimension = Dimension
-        self.KeyMapping = {"R": -1, "P": 0, "S": 1}
-        self.colormap = ["red", "green", "blue"]
+        self.KeyMapping = {"R": 0, "P": 1, "S": 2, "E": 3}
+        self.colormap = ["red", "green", "blue", "white"]
         #forms a list of Agent instances
         AgentList = [] 
 
@@ -36,13 +37,17 @@ class Grid:
             for i in range(EmptyCellCount):
                 AgentList[EmptyCellLocs[i]] = None
                 #also update colormap if there are emptycells
-                self.KeyMapping = {"R": -1, "P": 0, "S": 1, "E": 2}
-                self.colormap = ["red", "green", "blue", "white"]
+
+        self.KeyMapping = {"R": 0, "P": 1, "S": 2, "E": 3}
+        self.colorlist = ["red", "green", "blue", "white"]
 
         self.Agents = AgentList
         #reshape as an nxn grid instead of a list. you gotta stop using lists :p
         #this may be what array does
         self.AgentsGrid = np.array(AgentList).reshape(self.Dimension,self.Dimension)
+
+        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
+        self.NextAgents = deepcopy(self.Agents)
 
     def GetDimension(self):
         return self.Dimension
@@ -76,8 +81,6 @@ class Grid:
             AgentstoChange[i] = None
         self.Agents = self.AgentsGrid.flatten().tolist()
         #ensures correct colormapping in case
-        self.KeyMapping = {"R": -1, "P": 0, "S": 1, "E": 2}
-        self.colormap = ["red", "green", "blue", "white"]
 
     def CreateEmptyDiagonal(self, UporDown):
         '''
@@ -101,12 +104,9 @@ class Grid:
             self.AgentsGrid[(C0[0]+k*i)%D][(C0[1]+i)%D] = None
 
         self.Agents = self.AgentsGrid.flatten().tolist()
-        self.KeyMapping = {"R": -1, "P": 0, "S": 1, "E": 2}
-        self.colormap = ["red", "green", "blue", "white"]
-    #Visualises Grid
 
     def VisualiseGrid(self):
-        colormap = colors.ListedColormap(self.colormap)
+        colormap = colors.ListedColormap(self.GetAllColors())
         plt.figure(figsize=(5, 5))
         plt.imshow(self.ListToArray(), cmap=colormap)
         plt.show()
@@ -145,7 +145,7 @@ class Grid:
         D = self.Dimension #for readability
         for j in range(0, D):
             for i in range(0, D):
-                if self.Agents[D*j+i] is None:
+                if self.NextAgents[D*j+i] is None:
                     # just adds 0 to this agent
                     ScoreList.append(0)
                     continue
@@ -160,7 +160,7 @@ class Grid:
 
                 for k in range(len(OppLoc)):
                     Score+= self.CheckWinner((j,i), OppLoc[k])
-                self.Agents[D*j+i].ChangeScore(Score) # base D mapping to a base 10 number :o
+                self.NextAgents[D*j+i].ChangeScore(Score) # base D mapping to a base 10 number :o
                 ScoreList.append(Score)
 
 
@@ -187,6 +187,8 @@ class Grid:
                 Agents.append(Agent(index = i+j,Probs = Probs))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
+        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
+        self.NextAgents = deepcopy(self.Agents)
         return self.Agents
 
     def OneWideRows(self):
@@ -202,6 +204,8 @@ class Grid:
                 Agents.append(Agent(index = i+j,Probs = Probs))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension,self.Dimension)
+        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
+        self.NextAgents = deepcopy(self.Agents)
         return self.Agents
 
     def TenWideRows(self):
@@ -217,6 +221,8 @@ class Grid:
                 Agents.append(Agent(index = i+j,Probs = Probs))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
+        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
+        self.NextAgents = deepcopy(self.Agents)
         return self.Agents
 
     def HalfThreeWideRows(self):
@@ -234,6 +240,8 @@ class Grid:
             Agents.append(Agent(index = len(Agents) + i))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
+        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
+        self.NextAgents = deepcopy(self.Agents)
         return self.Agents
 
     def HalfThreeWideRowsHalfSingle(self):
@@ -259,6 +267,8 @@ class Grid:
                 Agents.append(Agent(index= Num + i + j, Probs=Probs))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
+        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
+        self.NextAgents = deepcopy(self.Agents)
         return self.Agents
 
     def HalfRockHalfRandom(self):
@@ -271,6 +281,8 @@ class Grid:
             Agents.append(Agent(index = Num + i))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
+        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
+        self.NextAgents = deepcopy(self.Agents)
         return self.Agents
 
 
@@ -289,6 +301,8 @@ class Grid:
                 Agents.append(Agent(index = Num + i + j))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
+        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
+        self.NextAgents = deepcopy(self.Agents)
         return self.Agents
 
     def SquareRock(self):
@@ -308,6 +322,8 @@ class Grid:
                 Agents.append(Agent(index=Num + i + j))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
+        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
+        self.NextAgents = deepcopy(self.Agents)
         return self.Agents
     
     def EmptyGrid(self):
@@ -315,8 +331,6 @@ class Grid:
         for i in range(len(self.Agents)):
             self.Agents[i] = None
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
-        self.KeyMapping = {"R": -1, "P": 0, "S": 1, "E": 2}
-        self.colormap = ["red", "green", "blue", "white"]
         return self.Agents
 
     def AddAgent(self, playtype, loc = None, Uniform = False, Ternary = False, Probs = None):
@@ -342,6 +356,19 @@ class Grid:
         self.AgentsGrid[locy, locx] = Agent(index, Uniform, Ternary, Probs) 
         self.Agents = self.AgentsGrid.flatten().tolist()
 
+    def GetAllColors(self):
+        AgentColors = []
+        ColorsOnBoard = []
+        for Agent in self.Agents:
+            if Agent is None:
+                AgentColors.append(3)
+            else: AgentColors.append(self.KeyMapping[Agent.GetMove()])
+        UniqueMovesPresent = list(set(AgentColors))
+        for UniqueMove in UniqueMovesPresent:
+            ColorsOnBoard.append(self.colorlist[UniqueMove])
+        print(UniqueMovesPresent)
+        print(ColorsOnBoard)
+        return ColorsOnBoard
 
 #Example Script for debugging -> sum of score list should be 0 (net zero game)
 #P.S. comment out before running Iterator
