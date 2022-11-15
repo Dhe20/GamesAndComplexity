@@ -13,7 +13,6 @@ x.VisualiseGrid()
 # x.Metrics().PlotRPSAmount()
 # # x.Metrics().PlotNormRPSAmount()
 # x.Metrics().PlotPeriodicity(cutoff = 100)
-
 # Eval.PlotSimilarity()
 # Eval.PlotRPSAmount()
 
