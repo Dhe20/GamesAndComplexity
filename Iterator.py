@@ -9,6 +9,7 @@ import string
 import copy
 from  Metrics import Metrics
 from copy import deepcopy
+from Agent import Agent
 
 #from WeightsAndMoves import Linear
 
@@ -51,10 +52,11 @@ class Iterator(Grid):
             self.AllData.append(localcopy)
             self.CheckAllWinners()
             #i as an argument to add timed decay
-            self.UpdateAllDists(i, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn, Murder = Murder,Convert = Convert)
+            self.UpdateAllDists(i, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn, Murder = Murder)
             self.UpdateAllMoves()
             #self.UpdateSomePositions(self.ListToArray(), ScoreArray)#for dying away and moving
-
+            if Convert:
+                self.BirthCells()
         if SaveData:
             self.SaveData()
 
@@ -82,6 +84,7 @@ class Iterator(Grid):
             for i in range(self.Dimension):
                 k = self.Dimension*j+i
                 if self.NextAgents[k] is None:
+                    #may have to do this in another loop
                     continue
 
                 RecentScore = self.NextAgents[k].GetRecentScore()
@@ -98,19 +101,14 @@ class Iterator(Grid):
                     NewDist = self.KillOrBeKilledAndLearn(k, RecentScore, TotalScore, RecentMove)
 
                 else:
-                    NewDist = self.Agents[k].GetProbabilityDist()
+                    NewDist = self.NextAgents[k].GetProbabilityDist()
 
                 if self.NextAgents[k] is not None:
                     self.NextAgents[k].ChangeDist(NewDist)
 
-                #may have to do this in another loop
-                if Convert:
-                    self.ConvertEmptyCell(j,i)
-
-        self.Agents = deepcopy(self.NextAgents)
-        self.AgentsGrid = deepcopy(self.NextAgentsGrid)
+        self.UpdateNextAgents()
            
-
+    
 
     def KillOrBeKilled(self, i, RecentScore, TotalScore, RecentMove):
         if RecentScore < 0:
@@ -142,32 +140,54 @@ class Iterator(Grid):
         else: NewDist = self.NextAgents[k].GetProbabilityDist()
         return NewDist
 
-    def ConvertEmptyCell(self, j,i, Prob = 0.5):
+    def BirthCells(self, Prob = 0.25):
         '''
         Prob - probability of conversion
+        (j,i) - location of emptycells
         '''
-
         D = self.Dimension
-        OppLoc = [ # i <3 modular arithmetic
-                    ((j)%D, (i+1)%D),
-                    ((j+1)%D, (i)%D),
-                    ((j)%D, (i-1)%D),
-                    ((j-1)%D, (i)%D),
-                    ] #equivalent of a dictionary
+        #define probabilities (arrays for easy addition)
+        ConversionProbDict = {
+            "R" : np.array([Prob,0,0]),
+            "P" : np.array([0,Prob,0]),
+            "S" : np.array([0,0,Prob]),
+        }
 
-        for k in range(len(OppLoc)):
-            if self.AgentsGrid[OppLoc[k]] is None:
-                Outcome = random.choices([0,1], weights = [Prob, 1-Prob])[0]
-                if Outcome == 1:
+        BirthedProbDict = {
+            "R" : [1,0,0],
+            "P" : [0,1,0],
+            "S" : [0,0,1],
+        }
+
+        #construct probability matrix
+        ProbabilityMatrix = np.zeros((D,D), dtype = object)
+        for j in range(D):
+            for i in range(D):
+                ProbabilityMatrix[j,i] = np.array([0,0,0], dtype= float)
+                if self.AgentsGrid[j,i] is not None:
+                    ProbabilityMatrix[j,i] = np.append(ProbabilityMatrix[j,i], 1-sum(ProbabilityMatrix[j,i]))
                     continue
-                elif Outcome == 0:
-                    AgentCopy = copy.deepcopy(self.AgentsGrid[j,i])
-                    self.AgentsGrid[OppLoc[k]] = AgentCopy
-                    self.Agents = self.AgentsGrid.flatten().tolist()
-        
-    
-
-
+                OppLoc = [ # i <3 modular arithmetic
+                            ((j)%D, (i+1)%D),
+                            ((j+1)%D, (i)%D),
+                            ((j)%D, (i-1)%D),
+                            ((j-1)%D, (i)%D),
+                            ] #equivalent of a dictionary
+                for k in range(len(OppLoc)):
+                    if self.AgentsGrid[OppLoc[k]] is None:
+                            continue
+                    AgentType = self.AgentsGrid[OppLoc[k]].GetMove()
+                    ProbabilityMatrix[j,i] = ProbabilityMatrix[j,i] + ConversionProbDict.get(AgentType)
+                ProbabilityMatrix[j,i] = np.append(ProbabilityMatrix[j,i], 1-sum(ProbabilityMatrix[j,i])) #append on the 'do nothing' probabilty
+        #loop through agentsgrid apply conversion probabilities (give birth)
+        for j in range(D):
+            for i in range(D):
+                Outcome = random.choices(['R','P','S', None], weights = ProbabilityMatrix[j,i])[0]
+                if Outcome is None:
+                    continue
+                Probs = BirthedProbDict.get(Outcome)
+                self.AgentsGrid[j,i] = Agent(index = D*j+i, Probs=Probs)
+        self.Agents = self.AgentsGrid.flatten().tolist()
     
     def Metrics(self):
         return Metrics(AgentList = self.AllData, Iterator = True)

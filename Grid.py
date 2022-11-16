@@ -48,7 +48,17 @@ class Grid:
 
         self.NextAgentsGrid = deepcopy(self.AgentsGrid)
         self.NextAgents = deepcopy(self.Agents)
+        self.UpdateNextAgents()
 
+    def UpdateNextAgents(self):
+        #needs to go at the end of every generate method
+        del self.NextAgentsGrid
+        del self.NextAgents
+        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
+        self.NextAgents = deepcopy(self.Agents)
+        self.KeyMapping = {"R": 0, "P": 1, "S": 2, "E": 3}
+        self.colorlist = ["red", "green", "blue", "white"]
+        
     def GetDimension(self):
         return self.Dimension
     #Converter Purely for Visuals of Grid
@@ -174,6 +184,9 @@ class Grid:
         #ScoreArray[:,1][(5)%5]
         pass
 
+
+    '''GENERATOR METHODS'''
+
     def ThreeWideRows(self):
         Agents = []
         for i in range(self.Dimension//3):
@@ -187,8 +200,7 @@ class Grid:
                 Agents.append(Agent(index = i+j,Probs = Probs))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
-        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
-        self.NextAgents = deepcopy(self.Agents)
+        self.UpdateNextAgents()
         return self.Agents
 
     def OneWideRows(self):
@@ -204,8 +216,7 @@ class Grid:
                 Agents.append(Agent(index = i+j,Probs = Probs))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension,self.Dimension)
-        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
-        self.NextAgents = deepcopy(self.Agents)
+        self.UpdateNextAgents()
         return self.Agents
 
     def TenWideRows(self):
@@ -221,8 +232,7 @@ class Grid:
                 Agents.append(Agent(index = i+j,Probs = Probs))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
-        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
-        self.NextAgents = deepcopy(self.Agents)
+        self.UpdateNextAgents()
         return self.Agents
 
     def HalfThreeWideRows(self):
@@ -240,8 +250,7 @@ class Grid:
             Agents.append(Agent(index = len(Agents) + i))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
-        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
-        self.NextAgents = deepcopy(self.Agents)
+        self.UpdateNextAgents()
         return self.Agents
 
     def HalfThreeWideRowsHalfSingle(self):
@@ -267,8 +276,7 @@ class Grid:
                 Agents.append(Agent(index= Num + i + j, Probs=Probs))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
-        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
-        self.NextAgents = deepcopy(self.Agents)
+        self.UpdateNextAgents()
         return self.Agents
 
     def HalfRockHalfRandom(self):
@@ -281,8 +289,7 @@ class Grid:
             Agents.append(Agent(index = Num + i))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
-        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
-        self.NextAgents = deepcopy(self.Agents)
+        self.UpdateNextAgents()
         return self.Agents
 
 
@@ -301,8 +308,7 @@ class Grid:
                 Agents.append(Agent(index = Num + i + j))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
-        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
-        self.NextAgents = deepcopy(self.Agents)
+        self.UpdateNextAgents()
         return self.Agents
 
     def SquareRock(self):
@@ -322,8 +328,7 @@ class Grid:
                 Agents.append(Agent(index=Num + i + j))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
-        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
-        self.NextAgents = deepcopy(self.Agents)
+        self.UpdateNextAgents()
         return self.Agents
     
     def EmptyGrid(self):
@@ -331,19 +336,20 @@ class Grid:
         for i in range(len(self.Agents)):
             self.Agents[i] = None
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
+        self.UpdateNextAgents()
         return self.Agents
 
     def AddAgent(self, playtype, loc = None, Uniform = False, Ternary = False, Probs = None):
         '''
         has same inputs as AgentClass init
         '''
-        probdict = {
+        ProbDict = {
             "R" : [1,0,0],
             "P" : [0,1,0],
             "S" : [0,0,1],
         }
         if Probs is None:
-            Probs = probdict.get(playtype)
+            Probs = ProbDict.get(playtype)
 
         if loc is None:
             locx = random.randint(0,self.Dimension)
@@ -355,6 +361,7 @@ class Grid:
 
         self.AgentsGrid[locy, locx] = Agent(index, Uniform, Ternary, Probs) 
         self.Agents = self.AgentsGrid.flatten().tolist()
+        self.UpdateNextAgents()
 
     def GetAllColors(self):
         AgentColors = []
