@@ -41,7 +41,7 @@ class Iterator(Grid):
 
     def Run(self, 
     SaveData = False, KillOrBeKilled = False, 
-    KillOrBeKilledAndLearn = False, Convert = False,
+    KillOrBeKilledAndLearn = False, Birth = False,
         Murder = False):
 
         # save data
@@ -52,11 +52,13 @@ class Iterator(Grid):
             self.AllData.append(localcopy)
             self.CheckAllWinners()
             #i as an argument to add timed decay
-            self.UpdateAllDists(i, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn, Murder = Murder)
-            self.UpdateAllMoves()
+            self.UpdateAllDists(i, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn)
             #self.UpdateSomePositions(self.ListToArray(), ScoreArray)#for dying away and moving
-            if Convert:
+            if Murder:
+                self.Murder()
+            if Birth:
                 self.BirthCells()
+            self.UpdateAllMoves()
         if SaveData:
             self.SaveData()
 
@@ -76,39 +78,36 @@ class Iterator(Grid):
             if self.Agents[i] is None:
                 continue
             self.Agents[i].MakeAMove()
+        self.UpdateNextAgents()
         return self.Agents
 
+
     # Use scores to adjust each individual Agent's distribution
-    def UpdateAllDists(self, TimeStep, KillOrBeKilled = False, KillOrBeKilledAndLearn = False, Convert = False, Murder = False):
-        for j in range(0, self.Dimension): #changed this loop to make it easier to convert adj cell
-            for i in range(self.Dimension):
-                k = self.Dimension*j+i
-                if self.NextAgents[k] is None:
-                    #may have to do this in another loop
-                    continue
+    def UpdateAllDists(self, TimeStep, KillOrBeKilled = False, KillOrBeKilledAndLearn = False):
+        for i in range(0, self.Dimension**2): #changed this loop to make it easier to convert adj cell
 
-                RecentScore = self.NextAgents[k].GetRecentScore()
-                TotalScore = self.NextAgents[k].GetTotalScore()
-                RecentMove = self.NextAgents[k].GetMove()
+            i
+            if self.Agents[i] is None:
+                continue
 
-                if Murder:
-                    NewDist = self.Murder(k, RecentScore, TotalScore, RecentMove)
+            RecentScore = self.Agents[i].GetRecentScore()
+            TotalScore = self.Agents[i].GetTotalScore()
+            RecentMove = self.Agents[i].GetMove()
 
-                elif KillOrBeKilled:
-                    NewDist = self.KillOrBeKilled(k, RecentScore, TotalScore, RecentMove)
 
-                elif KillOrBeKilledAndLearn:
-                    NewDist = self.KillOrBeKilledAndLearn(k, RecentScore, TotalScore, RecentMove)
+            if KillOrBeKilled:
+                NewDist = self.KillOrBeKilled(i, RecentScore, TotalScore, RecentMove)
 
-                else:
-                    NewDist = self.NextAgents[k].GetProbabilityDist()
+            elif KillOrBeKilledAndLearn:
+                NewDist = self.KillOrBeKilledAndLearn(i, RecentScore, TotalScore, RecentMove)
 
-                if self.NextAgents[k] is not None:
-                    self.NextAgents[k].ChangeDist(NewDist)
+            else:
+                NewDist = self.Agents[i].GetProbabilityDist()
 
-        self.UpdateNextAgents()
-           
-    
+            if self.Agents[i] is not None:
+                self.Agents[i].ChangeDist(NewDist)
+
+     
 
     def KillOrBeKilled(self, i, RecentScore, TotalScore, RecentMove):
         if RecentScore < 0:
@@ -127,18 +126,43 @@ class Iterator(Grid):
             NewDist = self.Agents[i].GetProbabilityDist()
         return NewDist
 
-    def Murder(self, k, RecentScore, TotalScore, RecentMove):
-        if RecentScore < 0:
-            DeathProb = 0.1*abs(RecentScore)
-            Dead = random.choices([True, False], weights=[DeathProb, 1 - DeathProb])[0]
-            if Dead:
-                self.NextAgents[k] = None
-                self.NextAgentsGrid = np.array(self.NextAgents).reshape(self.Dimension, self.Dimension)
-                NewDist = None
-            else:
-                NewDist = self.NextAgents[k].GetProbabilityDist()
-        else: NewDist = self.NextAgents[k].GetProbabilityDist()
-        return NewDist
+    def Murder(self, Prob = 0.1):
+
+
+        #construct probability matrix for death and survival
+        D = self.Dimension
+        ProbabilityMatrix = np.zeros((D,D), dtype = object)
+        for j in range(D):
+            for i in range(D):
+                if self.AgentsGrid[j,i] is not None:
+                    AgentRecentScore = self.AgentsGrid[j,i].GetRecentScore()
+                    if AgentRecentScore < 0:
+                        DeathProb = Prob*abs(AgentRecentScore) 
+                        ProbabilityMatrix[j,i] = np.array([DeathProb,1-DeathProb], dtype= float)
+                        continue
+                    ProbabilityMatrix[j,i] = np.array([0,1], dtype = float) # possible to avoid writing this twice?
+                ProbabilityMatrix[j,i] = np.array([0,1], dtype = float)
+        #execute probability matrix
+        for j in range(D):
+            for i in range(D):
+                Dead = random.choices([True,False], weights = ProbabilityMatrix[j,i])[0]
+                if Dead:
+                    self.AgentsGrid[j,i] = None
+        self.Agents = self.AgentsGrid.flatten().tolist()
+
+
+
+        # if RecentScore < 0:
+        #     DeathProb = 0.1*abs(RecentScore)
+        #     Dead = random.choices([True, False], weights=[DeathProb, 1 - DeathProb])[0]
+        #     if Dead:
+        #         self.AgentsGrid[j]
+        #         # self.Agents[k] = None
+        #         # self.NextAgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
+        #     else:
+        #         NewDist = self.Agents[k].GetProbabilityDist()
+        # else: NewDist = self.Agents[k].GetProbabilityDist()
+        # return NewDist
 
     def BirthCells(self, Prob = 0.25):
         '''

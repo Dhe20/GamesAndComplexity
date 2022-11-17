@@ -155,7 +155,7 @@ class Grid:
         D = self.Dimension #for readability
         for j in range(0, D):
             for i in range(0, D):
-                if self.NextAgents[D*j+i] is None:
+                if self.Agents[D*j+i] is None:
                     # just adds 0 to this agent
                     ScoreList.append(0)
                     continue
@@ -170,7 +170,7 @@ class Grid:
 
                 for k in range(len(OppLoc)):
                     Score+= self.CheckWinner((j,i), OppLoc[k])
-                self.NextAgents[D*j+i].ChangeScore(Score) # base D mapping to a base 10 number :o
+                self.Agents[D*j+i].ChangeScore(Score) # base D mapping to a base 10 number :o
                 ScoreList.append(Score)
 
 
@@ -363,6 +363,18 @@ class Grid:
         self.Agents = self.AgentsGrid.flatten().tolist()
         self.UpdateNextAgents()
 
+    def AddEmptyCell(self, loc = None):
+
+        if loc is None:
+            locx = random.randint(0,self.Dimension)
+            locy = random.randint(0,self.Dimension)
+        else:
+            locx, locy = loc
+        
+        self.AgentsGrid[locy, locx] = None
+        self.Agents = self.AgentsGrid.flatten().tolist()
+        self.UpdateNextAgents()
+
     def GetAllColors(self):
         AgentColors = []
         ColorsOnBoard = []
@@ -376,6 +388,7 @@ class Grid:
         print(UniqueMovesPresent)
         print(ColorsOnBoard)
         return ColorsOnBoard
+    
 
 #Example Script for debugging -> sum of score list should be 0 (net zero game)
 #P.S. comment out before running Iterator
