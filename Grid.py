@@ -44,10 +44,12 @@ class Grid:
         self.Agents = AgentList
         #reshape as an nxn grid instead of a list. you gotta stop using lists :p
         #this may be what array does
-        self.AgentsGrid = np.array(AgentList).reshape(self.Dimension,self.Dimension)
+        self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
 
-        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
         self.NextAgents = deepcopy(self.Agents)
+        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
+
+
 
     def GetDimension(self):
         return self.Dimension
@@ -145,7 +147,7 @@ class Grid:
         D = self.Dimension #for readability
         for j in range(0, D):
             for i in range(0, D):
-                if self.NextAgents[D*j+i] is None:
+                if self.Agents[D*j+i] is None:
                     # just adds 0 to this agent
                     ScoreList.append(0)
                     continue
@@ -160,7 +162,7 @@ class Grid:
 
                 for k in range(len(OppLoc)):
                     Score+= self.CheckWinner((j,i), OppLoc[k])
-                self.NextAgents[D*j+i].ChangeScore(Score) # base D mapping to a base 10 number :o
+                self.Agents[D*j+i].ChangeScore(Score) # base D mapping to a base 10 number :o
                 ScoreList.append(Score)
 
 
@@ -185,10 +187,8 @@ class Grid:
                 Probs = [0, 0, 1]
             for j in range(0,3*self.Dimension):
                 Agents.append(Agent(index = i+j,Probs = Probs))
-        self.Agents = Agents
-        self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
-        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
-        self.NextAgents = deepcopy(self.Agents)
+        self.NextAgents = Agents
+        self.EquateAllGrids()
         return self.Agents
 
     def OneWideRows(self):
@@ -202,10 +202,8 @@ class Grid:
                 Probs = [0, 0, 1]
             for j in range(0,self.Dimension):
                 Agents.append(Agent(index = i+j,Probs = Probs))
-        self.Agents = Agents
-        self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension,self.Dimension)
-        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
-        self.NextAgents = deepcopy(self.Agents)
+        self.NextAgents = Agents
+        self.EquateAllGrids()
         return self.Agents
 
     def TenWideRows(self):
@@ -219,10 +217,8 @@ class Grid:
                 Probs = [0, 0, 1]
             for j in range(0,10*self.Dimension):
                 Agents.append(Agent(index = i+j,Probs = Probs))
-        self.Agents = Agents
-        self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
-        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
-        self.NextAgents = deepcopy(self.Agents)
+        self.NextAgents = Agents
+        self.EquateAllGrids()
         return self.Agents
 
     def HalfThreeWideRows(self):
@@ -238,10 +234,8 @@ class Grid:
                 Agents.append(Agent(index=i + j, Probs=Probs))
         for i in range(self.Dimension**2 - len(Agents)):
             Agents.append(Agent(index = len(Agents) + i))
-        self.Agents = Agents
-        self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
-        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
-        self.NextAgents = deepcopy(self.Agents)
+        self.NextAgents = Agents
+        self.EquateAllGrids()
         return self.Agents
 
     def HalfThreeWideRowsHalfSingle(self):
@@ -265,10 +259,8 @@ class Grid:
                 Probs = [0, 0, 1]
             for j in range(0, self.Dimension):
                 Agents.append(Agent(index= Num + i + j, Probs=Probs))
-        self.Agents = Agents
-        self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
-        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
-        self.NextAgents = deepcopy(self.Agents)
+        self.NextAgents = Agents
+        self.EquateAllGrids()
         return self.Agents
 
     def HalfRockHalfRandom(self):
@@ -279,10 +271,8 @@ class Grid:
         Num = len(Agents)
         for i in range(self.Dimension ** 2 - Num):
             Agents.append(Agent(index = Num + i))
-        self.Agents = Agents
-        self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
-        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
-        self.NextAgents = deepcopy(self.Agents)
+        self.NextAgents = Agents
+        self.EquateAllGrids()
         return self.Agents
 
 
@@ -299,10 +289,8 @@ class Grid:
         for i in range(0, self.Dimension - int(Num/self.Dimension)):
             for j in range(0, self.Dimension):
                 Agents.append(Agent(index = Num + i + j))
-        self.Agents = Agents
-        self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
-        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
-        self.NextAgents = deepcopy(self.Agents)
+        self.NextAgents = Agents
+        self.EquateAllGrids()
         return self.Agents
 
     def SquareRock(self):
@@ -320,17 +308,14 @@ class Grid:
         for i in range(0, self.Dimension - int(Num / self.Dimension)):
             for j in range(0, self.Dimension):
                 Agents.append(Agent(index=Num + i + j))
-        self.Agents = Agents
-        self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
-        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
-        self.NextAgents = deepcopy(self.Agents)
+        self.NextAgents = Agents
+        self.EquateAllGrids()
         return self.Agents
     
     def EmptyGrid(self):
-
-        for i in range(len(self.Agents)):
-            self.Agents[i] = None
-        self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
+        Agents = [None for i in range(len(self.Agents))]
+        self.NextAgents = Agents
+        self.EquateAllGrids()
         return self.Agents
 
     def AddAgent(self, playtype, loc = None, Uniform = False, Ternary = False, Probs = None):
@@ -366,9 +351,13 @@ class Grid:
         UniqueMovesPresent = list(set(AgentColors))
         for UniqueMove in UniqueMovesPresent:
             ColorsOnBoard.append(self.colorlist[UniqueMove])
-        print(UniqueMovesPresent)
-        print(ColorsOnBoard)
         return ColorsOnBoard
+
+
+    def EquateAllGrids(self):
+        self.Agents = deepcopy(self.NextAgents)
+        self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
+        self.NextAgentsGrid = deepcopy(self.AgentsGrid)
 
 #Example Script for debugging -> sum of score list should be 0 (net zero game)
 #P.S. comment out before running Iterator

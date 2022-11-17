@@ -4,11 +4,10 @@ from Metrics import Metrics
 import matplotlib.pyplot as plt
 import time;
 
-x = Iterator(6, 2, Ternary = True)
-x.ThreeWideRows()
+x = Iterator(30, 100, Ternary = True)
 x.VisualiseGrid()
-x.Run(SaveData = False, Convert = False, KillOrBeKilledAndLearn=False, Murder = True)
-# x.Metrics().AnimateEvolution(500)
+x.Run(SaveData = False, Convert = False, KillOrBeKilledAndLearn=True, Murder = False)
+x.Metrics().AnimateEvolution(100)
 x.VisualiseGrid()
 # x.Metrics().PlotRPSAmount()
 # # x.Metrics().PlotNormRPSAmount()

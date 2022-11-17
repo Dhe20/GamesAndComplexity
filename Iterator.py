@@ -51,9 +51,13 @@ class Iterator(Grid):
             self.AllData.append(localcopy)
             self.CheckAllWinners()
             #i as an argument to add timed decay
-            self.UpdateAllDists(i, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn, Murder = Murder,Convert = Convert)
+            self.UpdateAllDists(i, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn,
+                                Murder = Murder, Convert = Convert)
             self.UpdateAllMoves()
             #self.UpdateSomePositions(self.ListToArray(), ScoreArray)#for dying away and moving
+
+
+
 
         if SaveData:
             self.SaveData()
@@ -78,15 +82,16 @@ class Iterator(Grid):
 
     # Use scores to adjust each individual Agent's distribution
     def UpdateAllDists(self, TimeStep, KillOrBeKilled = False, KillOrBeKilledAndLearn = False, Convert = False, Murder = False):
+
         for j in range(0, self.Dimension): #changed this loop to make it easier to convert adj cell
             for i in range(self.Dimension):
                 k = self.Dimension*j+i
-                if self.NextAgents[k] is None:
+                if self.Agents[k] is None:
                     continue
 
-                RecentScore = self.NextAgents[k].GetRecentScore()
-                TotalScore = self.NextAgents[k].GetTotalScore()
-                RecentMove = self.NextAgents[k].GetMove()
+                RecentScore = self.Agents[k].GetRecentScore()
+                TotalScore = self.Agents[k].GetTotalScore()
+                RecentMove = self.Agents[k].GetMove()
 
                 if Murder:
                     NewDist = self.Murder(k, RecentScore, TotalScore, RecentMove)
@@ -100,19 +105,20 @@ class Iterator(Grid):
                 else:
                     NewDist = self.Agents[k].GetProbabilityDist()
 
-                if self.NextAgents[k] is not None:
+                if self.Agents[k] is not None:
                     self.NextAgents[k].ChangeDist(NewDist)
+                    self.NextAgentsGrid = np.array(self.NextAgents).reshape(self.Dimension, self.Dimension)
 
                 #may have to do this in another loop
                 if Convert:
                     self.ConvertEmptyCell(j,i)
 
-        self.Agents = deepcopy(self.NextAgents)
-        self.AgentsGrid = deepcopy(self.NextAgentsGrid)
-           
+        self.EquateAllGrids()
+
 
 
     def KillOrBeKilled(self, i, RecentScore, TotalScore, RecentMove):
+        print("Recent Move")
         if RecentScore < 0:
             NewDist = choices([[1, 0, 0], [0, 1, 0], [0, 0, 1]])[0]
         else:
@@ -122,7 +128,6 @@ class Iterator(Grid):
     def KillOrBeKilledAndLearn(self, i, RecentScore, TotalScore, RecentMove):
         #Change Move according to what beat you:
         MoveShuffle = {"R": [0,1,0], "P": [0,0,1], "S": [1,0,0]}
-
         if RecentScore < 0:
             NewDist = MoveShuffle[RecentMove]
         else:
