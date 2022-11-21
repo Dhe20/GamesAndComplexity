@@ -56,8 +56,6 @@ class Iterator(Grid):
             #self.UpdateSomePositions(self.ListToArray(), ScoreArray)#for dying away and moving
             if Murder:
                 self.Murder()
-            localcopy = copy.deepcopy(self.Agents)
-            self.AllData.append(localcopy)
             if Birth:
                 self.BirthCells()
             if LifeAndDeath:
@@ -214,14 +212,14 @@ class Iterator(Grid):
         self.Agents = self.AgentsGrid.flatten().tolist()
     
 
-    def LifeAndDeath(self, ProbLife = 0.25, ProbDeathSingle = 0.25):
+    def LifeAndDeath(self, ProbLifeSingle = 0.1, ProbDeathSingle = 0.25):
         # combining the identical method for probabilities
         D = self.Dimension
         #define probabilities
         ConversionProbDict = {
-            "R" : np.array([ProbLife,0,0,0]), #
-            "P" : np.array([0,ProbLife,0,0]), # last 0 because there is 0 probability of death
-            "S" : np.array([0,0,ProbLife,0]), #
+            "R" : np.array([ProbLifeSingle,0,0,0]), #
+            "P" : np.array([0,ProbLifeSingle,0,0]), # last 0 because there is 0 probability of death
+            "S" : np.array([0,0,ProbLifeSingle,0]), #
         }
         #define input for RPS
         OutcomeDict = {
