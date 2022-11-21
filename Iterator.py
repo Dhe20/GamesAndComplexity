@@ -42,7 +42,7 @@ class Iterator(Grid):
     def Run(self, 
     SaveData = False, KillOrBeKilled = False, 
     KillOrBeKilledAndLearn = False, Birth = False,
-        Murder = False):
+    Murder = False, LifeAndDeath = False):
 
         # save data
 
@@ -56,8 +56,12 @@ class Iterator(Grid):
             #self.UpdateSomePositions(self.ListToArray(), ScoreArray)#for dying away and moving
             if Murder:
                 self.Murder()
+            localcopy = copy.deepcopy(self.Agents)
+            self.AllData.append(localcopy)
             if Birth:
                 self.BirthCells()
+            if LifeAndDeath:
+                self.LifeAndDeath()
             self.UpdateAllMoves()
         if SaveData:
             self.SaveData()
@@ -165,10 +169,6 @@ class Iterator(Grid):
         # return NewDist
 
     def BirthCells(self, Prob = 0.25):
-        '''
-        Prob - probability of conversion
-        (j,i) - location of emptycells
-        '''
         D = self.Dimension
         #define probabilities (arrays for easy addition)
         ConversionProbDict = {
@@ -213,7 +213,71 @@ class Iterator(Grid):
                 self.AgentsGrid[j,i] = Agent(index = D*j+i, Probs=Probs)
         self.Agents = self.AgentsGrid.flatten().tolist()
     
+
+    def LifeAndDeath(self, ProbLife = 0.25, ProbDeathSingle = 0.25):
+        # combining the identical method for probabilities
+        D = self.Dimension
+        #define probabilities
+        ConversionProbDict = {
+            "R" : np.array([ProbLife,0,0,0]), #
+            "P" : np.array([0,ProbLife,0,0]), # last 0 because there is 0 probability of death
+            "S" : np.array([0,0,ProbLife,0]), #
+        }
+        #define input for RPS
+        OutcomeDict = {
+            "R" : [1,0,0],
+            "P" : [0,1,0],
+            "S" : [0,0,1],
+        }
+        #construct probability matrix. Each element is an array with:
+        #[P(NoneToR),P(NoneToP),P(NoneToS), P(Death), P(DoNothing)]
+        ProbabilityMatrix = np.zeros((D,D), dtype = object)
+        for j in range(D):
+            for i in range(D):
+                #replace every zero with an array
+                PMat = np.array([0,0,0,0], dtype = float)  #[P(NoneToR),P(NoneToP),P(NoneToS), P(Death)]
+                #if not an empty cell, have a chance of dying
+                if self.AgentsGrid[j,i] is not None:
+                    AgentRecentScore = self.AgentsGrid[j,i].GetRecentScore()
+                    if AgentRecentScore < 0:
+                        ProbDeath = ProbDeathSingle*abs(AgentRecentScore)
+                        PMat = np.array([0,0,0,ProbDeath], dtype = float)
+                        PMat = np.append(PMat, 1-ProbDeath)#append P(DoNothing)
+                    else:
+                        PMat = np.append(PMat, 1)#append P(DoNothing) (nothing happens if score >0)
+                    ProbabilityMatrix[j,i] = PMat
+                    continue
+
+                #if an empty cell, compute chances of conversion
+                OppLoc = [ # i <3 modular arithmetic
+                            ((j)%D, (i+1)%D),
+                            ((j+1)%D, (i)%D),
+                            ((j)%D, (i-1)%D),
+                            ((j-1)%D, (i)%D),
+                            ] #equivalent of a dictionary
+                for k in range(len(OppLoc)):
+                    if self.AgentsGrid[OppLoc[k]] is None:
+                            continue
+                    AgentType = self.AgentsGrid[OppLoc[k]].GetMove()
+                    PMat = PMat + ConversionProbDict.get(AgentType)
+                PMat = np.append(PMat, 1-sum(PMat)) #appending P(DoNothing)
+                ProbabilityMatrix[j,i] = PMat
+
+        #apply probabilities
+        for j in range(D):
+            for i in range(D):
+                Outcome = random.choices(['R','P','S','D','N'], weights = ProbabilityMatrix[j,i])[0]
+                if Outcome == 'N':
+                    continue
+                if Outcome == 'D':
+                    self.AgentsGrid[j,i] = None
+                    continue
+                BirthedProb = OutcomeDict.get(Outcome)
+                self.AgentsGrid[j,i] = Agent(index = D*j+i, Probs=BirthedProb)
+        self.Agents = self.AgentsGrid.flatten().tolist()
+    
     def Metrics(self):
         return Metrics(AgentList = self.AllData, Iterator = True)
 
 
+    
