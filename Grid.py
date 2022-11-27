@@ -385,8 +385,6 @@ class Grid:
         UniqueMovesPresent = list(set(AgentColors))
         for UniqueMove in UniqueMovesPresent:
             ColorsOnBoard.append(self.colorlist[UniqueMove])
-        print(UniqueMovesPresent)
-        print(ColorsOnBoard)
         return ColorsOnBoard
     
 
