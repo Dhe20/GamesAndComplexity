@@ -1,6 +1,6 @@
 from copy import copy
 from Grid import Grid;
-from random import choices;
+import random
 from tqdm import tqdm
 import pickle as pk
 import numpy as np
@@ -17,24 +17,30 @@ from Agent import Agent
 
 
 class Iterator(Grid):
-    def __init__(self, Dimension, NumberOfSteps, Uniform = False, Ternary = False, EmptyCellCount=0):
+    def __init__(self, Dimension, NumberOfSteps, Uniform = False, Ternary = False, EmptyCellCount=0, Seed=None):
 
         #Take all of Grid's methods and attributes:
         super().__init__(
                         Dimension = Dimension, EmptyCellCount = EmptyCellCount,
-                         Uniform = Uniform, Ternary = Ternary)
+                         Uniform = Uniform, Ternary = Ternary, Seed=Seed)
         #Adding storage for PKL and iterations
         self.Iterations = NumberOfSteps
         self.FileName = ""
         self.AlreadyRun = False 
         self.AllData = []
+        self.Seed = Seed
 
         FilenameData = [str(self.GetNumberOfSteps()),
                         str(self.GetDimension()),
                         ''.join(random.choice(string.ascii_lowercase) for i in range(5)), ]
         # create a local /pkl dir
         # pkl/NoIterations_GridSize_5letterstring.pkl
-        self.Filename = "pkl/" + FilenameData[0] + '_' + FilenameData[1] + '_' + FilenameData[-1] + '.pkl'
+        if Seed is not None:
+            print("Seed: " + str(Seed))
+            random.seed(Seed)
+            self.Filename = "pkl/" + FilenameData[0] + '_' + FilenameData[1] + '_' + FilenameData[-1] +  '_' + str(Seed)+ '.pkl'
+        else: self.Filename = "pkl/" + FilenameData[0] + '_' + FilenameData[1] + '_' + FilenameData[-1] + '.pkl'
+
 
     def GetNumberOfSteps(self):
         return self.Iterations
@@ -113,7 +119,7 @@ class Iterator(Grid):
 
     def KillOrBeKilled(self, i, RecentScore, TotalScore, RecentMove):
         if RecentScore < 0:
-            NewDist = choices([[1, 0, 0], [0, 1, 0], [0, 0, 1]])[0]
+            NewDist = random.choices([[1, 0, 0], [0, 1, 0], [0, 0, 1]])[0]
         else:
             NewDist = self.Agents[i].GetProbabilityDist()
         return NewDist
@@ -208,11 +214,11 @@ class Iterator(Grid):
                 if Outcome is None:
                     continue
                 Probs = BirthedProbDict.get(Outcome)
-                self.AgentsGrid[j,i] = Agent(index = D*j+i, Probs=Probs)
+                self.AgentsGrid[j,i] = Agent(index = D*j+i, Probs=Probs, Seed = self.Seed)
         self.Agents = self.AgentsGrid.flatten().tolist()
     
 
-    def LifeAndDeath(self, ProbLifeSingle = 0.1, ProbDeathSingle = 0.25):
+    def LifeAndDeath(self, ProbLifeSingle = 0.25, ProbDeathSingle = 0.25):
         # combining the identical method for probabilities
         D = self.Dimension
         #define probabilities
@@ -271,7 +277,7 @@ class Iterator(Grid):
                     self.AgentsGrid[j,i] = None
                     continue
                 BirthedProb = OutcomeDict.get(Outcome)
-                self.AgentsGrid[j,i] = Agent(index = D*j+i, Probs=BirthedProb)
+                self.AgentsGrid[j,i] = Agent(index = D*j+i, Probs=BirthedProb, Seed = self.Seed)
         self.Agents = self.AgentsGrid.flatten().tolist()
     
     def Metrics(self):

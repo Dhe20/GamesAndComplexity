@@ -3,24 +3,21 @@ from Iterator import Iterator
 from Metrics import Metrics
 import matplotlib.pyplot as plt
 import time;
+import random
+x = Iterator(10, 20, Ternary = False, Seed = 0)
 
-x = Iterator(21, 1000, Ternary = True, EmptyCellCount= 150)
-# x.EmptyGrid()
-# x.AddAgent('R',[0,1])
-# x.AddAgent('R',[1,2])
-# x.AddAgent('R',[2,1])
-# x.AddAgent('R',[1,0])
-x.VisualiseGrid()
-x.Run(LifeAndDeath=True, KillOrBeKilledAndLearn=True)
-x.Metrics().AnimateEvolution(20)
-x.VisualiseGrid()
-#x.Metrics().PlotRPSAmount()
-# # x.Metrics().PlotNormRPSAmount()
-# x.Metrics().PlotPeriodicity(cutoff = 100)
-# Eval.PlotSimilarity()
-# Eval.PlotRPSAmount()
 
-#
+x.Run(LifeAndDeath=True)
+
+x.Metrics().AnimateEvolution(1000)
+
+# x.VisualiseGrid()
+# #x.Metrics().PlotRPSAmount()
+# # # x.Metrics().PlotNormRPSAmount()
+# # x.Metrics().PlotPeriodicity(cutoff = 100)
+# # Eval.PlotSimilarity()
+# # Eval.PlotRPSAmount()
+
 
 
 

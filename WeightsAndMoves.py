@@ -1,5 +1,5 @@
 import numpy as np
-from random import choices
+import random
 '''
 Non-Markovian adjustment of weights (based on what was just played)
 subclasses define the weight adjustments. may get 
@@ -7,7 +7,7 @@ different behaviour if we define different scalings
 '''
 
 class WeightsAndMoves:
-    def __init__(self, Probs = None, Uniform = False, Ternary = False, MoveType = None):#, JustPlayed):
+    def __init__(self, Probs = None, Uniform = False, Ternary = False, MoveType = None, Seed = None):#, JustPlayed):
         '''
         Scores - (int) current score of each agent
         Probs - (list)current probability to play O,I,X
@@ -15,12 +15,15 @@ class WeightsAndMoves:
         JustPlayed - (Str: "O" ,"I" , "X") what was just played 
         instance to be initiated at every new iteration timestep
         '''
+        self.Seed = Seed
+        if Seed is not None:
+            random.seed(Seed)
         if Uniform:
             self.Probs = [1/3,1/3,1/3]
         elif Probs:
             self.Probs = Probs
         elif Ternary:
-            self.Probs = choices([[1,0,0], [0,1,0], [0,0,1]])[0]
+            self.Probs = random.choices([[1,0,0], [0,1,0], [0,0,1]])[0]
 
         self.PO, self.PI, self.PX = self.Probs #to make defining functions easier
 
@@ -61,7 +64,7 @@ class WeightsAndMoves:
         else:
             return "R" #Just incase
     def Random(self):
-        return choices(["R", "P", "S"], self.Probs)[0]
+        return random.choices(["R", "P", "S"], self.Probs)[0]
 
     def UpdateDist(self, Probs):
         #FunkyFunction

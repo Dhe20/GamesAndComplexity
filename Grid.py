@@ -14,19 +14,21 @@ class Grid:
     # List of Objects (Agent Instances)
     #Dimension is Width of Grid
 
-    def __init__(self, Dimension, EmptyCellCount = 0, Uniform = False, Ternary = False):
+    def __init__(self, Dimension, EmptyCellCount = 0, Uniform = False, Ternary = False, Seed = None):
         '''
         EmptyCellCount: (int) number of empty cells
         '''
-
+        self.Seed = Seed
+        if Seed is not None:
+            random.seed(Seed)
         self.Dimension = Dimension
         self.KeyMapping = {"R": 0, "P": 1, "S": 2, "E": 3}
         self.colormap = ["red", "green", "blue", "white"]
         #forms a list of Agent instances
-        AgentList = [] 
-
+        AgentList = []
+        self.SeedList = [random.randint(0,1e6) for x in range(self.Dimension**2)]
         for i in range(0,self.Dimension**2):
-            AgentList.append(Agent(i, Uniform = Uniform, Ternary=Ternary))
+            AgentList.append(Agent(i, Uniform = Uniform, Ternary = Ternary))
 
         ###EmptyCells###
         if isinstance(EmptyCellCount, int) == False:
@@ -69,7 +71,7 @@ class Grid:
             ArrayFile = []
             for j in range(0, self.Dimension):
                 if self.Agents[self.Dimension * i + j] is None:
-                    ArrayFile.append(2)
+                    ArrayFile.append(3)
                     continue
                 ArrayElement = self.Agents[self.Dimension * i + j].GetMove()
                 ArrayFile.append(self.KeyMapping[ArrayElement])
@@ -197,7 +199,7 @@ class Grid:
             if i % 3 - 2 == 0:
                 Probs = [0, 0, 1]
             for j in range(0,3*self.Dimension):
-                Agents.append(Agent(index = i+j,Probs = Probs))
+                Agents.append(Agent(index = i+j,Probs = Probs, Seed = self.Seed))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
         self.UpdateNextAgents()
@@ -213,7 +215,7 @@ class Grid:
             if i % 3 - 2 == 0:
                 Probs = [0, 0, 1]
             for j in range(0,self.Dimension):
-                Agents.append(Agent(index = i+j,Probs = Probs))
+                Agents.append(Agent(index = i+j,Probs = Probs, Seed = random.randint(0,1e6)))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension,self.Dimension)
         self.UpdateNextAgents()
@@ -229,7 +231,7 @@ class Grid:
             if i % 3 - 2 == 0:
                 Probs = [0, 0, 1]
             for j in range(0,10*self.Dimension):
-                Agents.append(Agent(index = i+j,Probs = Probs))
+                Agents.append(Agent(index = i+j,Probs = Probs, Seed = random.randint(0,1e6)))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
         self.UpdateNextAgents()
@@ -245,9 +247,9 @@ class Grid:
             if i % 3 - 2 == 0:
                 Probs = [0, 0, 1]
             for j in range(0, 3 * self.Dimension):
-                Agents.append(Agent(index=i + j, Probs=Probs))
+                Agents.append(Agent(index=i + j, Probs=Probs, Seed = self.Seed))
         for i in range(self.Dimension**2 - len(Agents)):
-            Agents.append(Agent(index = len(Agents) + i))
+            Agents.append(Agent(index = len(Agents) + i), Seed = random.randint(0,1e6))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
         self.UpdateNextAgents()
@@ -263,7 +265,7 @@ class Grid:
             if i % 3 - 2 == 0:
                 Probs = [0, 0, 1]
             for j in range(0, 3 * self.Dimension):
-                Agents.append(Agent(index=i + j, Probs=Probs))
+                Agents.append(Agent(index=i + j, Probs=Probs, Seed = random.randint(0,1e6)))
         Num = len(Agents)
         for i in range(self.Dimension - int(Num/self.Dimension)):
             if i % 3 == 0:
@@ -273,7 +275,7 @@ class Grid:
             if i % 3 - 2 == 0:
                 Probs = [0, 0, 1]
             for j in range(0, self.Dimension):
-                Agents.append(Agent(index= Num + i + j, Probs=Probs))
+                Agents.append(Agent(index= Num + i + j, Probs=Probs, Seed = random.randint(0,1e6)))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
         self.UpdateNextAgents()
@@ -283,10 +285,10 @@ class Grid:
         Agents = []
         for i in range(0, self.Dimension//2):
             for j in range(0, self.Dimension):
-                Agents.append(Agent(index = i + j, Probs = [1,0,0]))
+                Agents.append(Agent(index = i + j, Probs = [1,0,0], Seed = random.randint(0,1e6)))
         Num = len(Agents)
         for i in range(self.Dimension ** 2 - Num):
-            Agents.append(Agent(index = Num + i))
+            Agents.append(Agent(index = Num + i, Seed = random.randint(0,1e6)))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
         self.UpdateNextAgents()
@@ -297,15 +299,15 @@ class Grid:
         Agents = []
         for i in range(0, self.Dimension//3):
             for j in range(0, self.Dimension):
-                Agents.append(Agent(index = i + j))
+                Agents.append(Agent(index = i + j, Seed = random.randint(0,1e6)))
         Num = len(Agents)
         for i in range(0, self.Dimension//3):
             for j in range(0, self.Dimension):
-                Agents.append(Agent(index = Num + i + j, Probs = [1,0,0]))
+                Agents.append(Agent(index = Num + i + j, Probs = [1,0,0], Seed = random.randint(0,1e6)))
         Num = len(Agents)
         for i in range(0, self.Dimension - int(Num/self.Dimension)):
             for j in range(0, self.Dimension):
-                Agents.append(Agent(index = Num + i + j))
+                Agents.append(Agent(index = Num + i + j, Seed = random.randint(0,1e6)))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
         self.UpdateNextAgents()
@@ -315,17 +317,17 @@ class Grid:
         Agents = []
         for i in range(0, self.Dimension // 3):
             for j in range(0, self.Dimension):
-                Agents.append(Agent(index=i + j))
+                Agents.append(Agent(index=i + j, Seed = random.randint(0,1e6)))
         Num = len(Agents)
         for i in range(0, self.Dimension // 3):
             for j in range(0, self.Dimension):
                 if j > self.Dimension//3 and j < 2*self.Dimension//3:
-                    Agents.append(Agent(index=Num + i + j, Probs=[1, 0, 0]))
+                    Agents.append(Agent(index=Num + i + j, Probs=[1, 0, 0], Seed = random.randint(0,1e6)))
                 else: Agents.append(Agent(index=Num + i + j))
         Num = len(Agents)
         for i in range(0, self.Dimension - int(Num / self.Dimension)):
             for j in range(0, self.Dimension):
-                Agents.append(Agent(index=Num + i + j))
+                Agents.append(Agent(index=Num + i + j, Seed = random.randint(0,1e6)))
         self.Agents = Agents
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
         self.UpdateNextAgents()
@@ -335,6 +337,12 @@ class Grid:
 
         for i in range(len(self.Agents)):
             self.Agents[i] = None
+        self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
+        self.UpdateNextAgents()
+        return self.Agents
+
+    def FlippedGrid(self):
+        self.Agents.reverse()
         self.AgentsGrid = np.array(self.Agents).reshape(self.Dimension, self.Dimension)
         self.UpdateNextAgents()
         return self.Agents
@@ -359,7 +367,7 @@ class Grid:
 
         index = self.Dimension * locx + locy # mapping from grid to flattened array
 
-        self.AgentsGrid[locy, locx] = Agent(index, Uniform, Ternary, Probs) 
+        self.AgentsGrid[locy, locx] = Agent(index, Uniform, Ternary, Probs, Seed = random.randint(0,1e6))
         self.Agents = self.AgentsGrid.flatten().tolist()
         self.UpdateNextAgents()
 
