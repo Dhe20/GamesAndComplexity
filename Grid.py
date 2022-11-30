@@ -26,9 +26,8 @@ class Grid:
         self.colormap = ["red", "green", "blue", "white"]
         #forms a list of Agent instances
         AgentList = []
-        self.SeedList = [random.randint(0,1e6) for x in range(self.Dimension**2)]
         for i in range(0,self.Dimension**2):
-            AgentList.append(Agent(i, Uniform = Uniform, Ternary = Ternary))
+            AgentList.append(Agent(i, Uniform = Uniform, Ternary = Ternary, Seed = random.randint(0,1e6)))
 
         ###EmptyCells###
         if isinstance(EmptyCellCount, int) == False:

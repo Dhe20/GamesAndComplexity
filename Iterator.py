@@ -26,7 +26,7 @@ class Iterator(Grid):
         #Adding storage for PKL and iterations
         self.Iterations = NumberOfSteps
         self.FileName = ""
-        self.AlreadyRun = False 
+        self.AlreadyRun = False
         self.AllData = []
         self.Seed = Seed
 
@@ -45,10 +45,10 @@ class Iterator(Grid):
     def GetNumberOfSteps(self):
         return self.Iterations
 
-    def Run(self, 
-    SaveData = False, KillOrBeKilled = False, 
+    def Run(self,
+    SaveData = False, KillOrBeKilled = False,
     KillOrBeKilledAndLearn = False, Birth = False,
-    Murder = False, LifeAndDeath = False):
+    Murder = False, LifeAndDeath = False, UnoReverse = False):
 
         # save data
 
@@ -66,6 +66,8 @@ class Iterator(Grid):
                 self.BirthCells()
             if LifeAndDeath:
                 self.LifeAndDeath()
+            if UnoReverse:
+                self.UnoReverseLifeAndDeath()
             self.UpdateAllMoves()
         if SaveData:
             self.SaveData()
@@ -115,7 +117,7 @@ class Iterator(Grid):
             if self.Agents[i] is not None:
                 self.Agents[i].ChangeDist(NewDist)
 
-     
+
 
     def KillOrBeKilled(self, i, RecentScore, TotalScore, RecentMove):
         if RecentScore < 0:
@@ -145,7 +147,7 @@ class Iterator(Grid):
                 if self.AgentsGrid[j,i] is not None:
                     AgentRecentScore = self.AgentsGrid[j,i].GetRecentScore()
                     if AgentRecentScore < 0:
-                        DeathProb = Prob*abs(AgentRecentScore) 
+                        DeathProb = Prob*abs(AgentRecentScore)
                         ProbabilityMatrix[j,i] = np.array([DeathProb,1-DeathProb], dtype= float)
                         continue
                     ProbabilityMatrix[j,i] = np.array([0,1], dtype = float) # possible to avoid writing this twice?
@@ -216,7 +218,7 @@ class Iterator(Grid):
                 Probs = BirthedProbDict.get(Outcome)
                 self.AgentsGrid[j,i] = Agent(index = D*j+i, Probs=Probs, Seed = self.Seed)
         self.Agents = self.AgentsGrid.flatten().tolist()
-    
+
 
     def LifeAndDeath(self, ProbLifeSingle = 0.25, ProbDeathSingle = 0.25):
         # combining the identical method for probabilities
@@ -277,11 +279,74 @@ class Iterator(Grid):
                     self.AgentsGrid[j,i] = None
                     continue
                 BirthedProb = OutcomeDict.get(Outcome)
-                self.AgentsGrid[j,i] = Agent(index = D*j+i, Probs=BirthedProb, Seed = self.Seed)
+                self.AgentsGrid[j,i] = Agent(index = D*j+i, Probs=BirthedProb, Seed = random.randint(0,1e6))
         self.Agents = self.AgentsGrid.flatten().tolist()
-    
+
+
+    def UnoReverseLifeAndDeath(self, ProbLifeSingle = 0.25, ProbDeathSingle = 0.25):
+        # combining the identical method for probabilities
+        D = self.Dimension
+        #define probabilities
+        ConversionProbDict = {
+            "R" : np.array([ProbLifeSingle,0,0,0]), #
+            "P" : np.array([0,ProbLifeSingle,0,0]), # last 0 because there is 0 probability of death
+            "S" : np.array([0,0,ProbLifeSingle,0]), #
+        }
+        #define input for RPS
+        OutcomeDict = {
+            "R" : [1,0,0],
+            "P" : [0,1,0],
+            "S" : [0,0,1],
+        }
+        #construct probability matrix. Each element is an array with:
+        #[P(NoneToR),P(NoneToP),P(NoneToS), P(Death), P(DoNothing)]
+        ProbabilityMatrix = np.zeros((D,D), dtype = object)
+        for j in range(D):
+            j1 = D-1-j
+            for i in range(D):
+                i1 = D-1-i
+                #replace every zero with an array
+                PMat = np.array([0,0,0,0], dtype = float)  #[P(NoneToR),P(NoneToP),P(NoneToS), P(Death)]
+                #if not an empty cell, have a chance of dying
+                if self.AgentsGrid[j1,i1] is not None:
+                    AgentRecentScore = self.AgentsGrid[j1,i1].GetRecentScore()
+                    if AgentRecentScore < 0:
+                        ProbDeath = ProbDeathSingle*abs(AgentRecentScore)
+                        PMat = np.array([0,0,0,ProbDeath], dtype = float)
+                        PMat = np.append(PMat, 1-ProbDeath)#append P(DoNothing)
+                    else:
+                        PMat = np.append(PMat, 1)#append P(DoNothing) (nothing happens if score >0)
+                    ProbabilityMatrix[j1,i1] = PMat
+                    continue
+
+                #if an empty cell, compute chances of conversion
+                OppLoc = [ # i <3 modular arithmetic
+                            ((j1)%D, (i1+1)%D),
+                            ((j1+1)%D, (i1)%D),
+                            ((j1)%D, (i1-1)%D),
+                            ((j1-1)%D, (i1)%D),
+                            ] #equivalent of a dictionary
+                for k in range(len(OppLoc)):
+                    if self.AgentsGrid[OppLoc[k]] is None:
+                            continue
+                    AgentType = self.AgentsGrid[OppLoc[k]].GetMove()
+                    PMat = PMat + ConversionProbDict.get(AgentType)
+                PMat = np.append(PMat, 1-sum(PMat)) #appending P(DoNothing)
+                ProbabilityMatrix[j1,i1] = PMat
+
+        #apply probabilities
+        for j in range(D):
+            for i in range(D):
+                Outcome = random.choices(['R','P','S','D','N'], weights = ProbabilityMatrix[j,i])[0]
+                if Outcome == 'N':
+                    continue
+                if Outcome == 'D':
+                    self.AgentsGrid[j,i] = None
+                    continue
+                BirthedProb = OutcomeDict.get(Outcome)
+                self.AgentsGrid[j,i] = Agent(index = D*j+i, Probs=BirthedProb, Seed = random.randint(0,1e6))
+        self.Agents = self.AgentsGrid.flatten().tolist()
     def Metrics(self):
         return Metrics(AgentList = self.AllData, Iterator = True)
 
 
-    
