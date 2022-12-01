@@ -10,7 +10,7 @@ import copy
 from  Metrics import Metrics
 from copy import deepcopy
 from Agent import Agent
-
+import datetime
 #from WeightsAndMoves import Linear
 
 #Inherited class of Grid now allowing multiple iterations in time
@@ -29,12 +29,7 @@ class Iterator(Grid):
         self.AlreadyRun = False 
         self.AllData = []
 
-        FilenameData = [str(self.GetNumberOfSteps()),
-                        str(self.GetDimension()),
-                        ''.join(random.choice(string.ascii_lowercase) for i in range(5)), ]
-        # create a local /pkl dir
-        # pkl/NoIterations_GridSize_5letterstring.pkl
-        self.Filename = "pkl/" + FilenameData[0] + '_' + FilenameData[1] + '_' + FilenameData[-1] + '.pkl'
+        
 
     def GetNumberOfSteps(self):
         return self.Iterations
@@ -44,8 +39,6 @@ class Iterator(Grid):
     KillOrBeKilledAndLearn = False, Birth = False,
     Murder = False, LifeAndDeath = False):
 
-        # save data
-
         for i in tqdm(range(0, self.Iterations)):
 
             localcopy = copy.deepcopy(self.Agents)
@@ -53,7 +46,6 @@ class Iterator(Grid):
             self.CheckAllWinners()
             #i as an argument to add timed decay
             self.UpdateAllDists(i, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn)
-            #self.UpdateSomePositions(self.ListToArray(), ScoreArray)#for dying away and moving
             if Murder:
                 self.Murder()
             if Birth:
@@ -64,9 +56,64 @@ class Iterator(Grid):
         if SaveData:
             self.SaveData()
 
+    def RunUntilConvergence(self, 
+    SaveData = False, KillOrBeKilled = False, 
+    KillOrBeKilledAndLearn = False, Birth = False,
+    Murder = False, LifeAndDeath = False):
+
+        NIters = 0
+        while True: #oops
+            #check if one of the agents dominates
+            Count = self.CountAgents()
+            if self.Dimension**2 in Count:
+                break
+            #same method as with Run
+            localcopy = copy.deepcopy(self.Agents)
+            self.AllData.append(localcopy)
+            self.CheckAllWinners()
+            self.UpdateAllDists(None, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn)
+            
+            if Murder:
+                self.Murder()
+            if Birth:
+                self.BirthCells()
+            if LifeAndDeath:
+                self.LifeAndDeath()
+            
+            self.UpdateAllMoves()
+
+            #count the number of iterations
+            NIters += 1
+            if NIters>=10e6:
+                print('1 million iterations and no convergence. Give up')
+                return NIters
+
+        try:
+            FinalDom = self.Agents[0].GetMove()
+        except AttributeError: # accounts for None
+            FinalDom = 'E'
+    
+        print('Final Agent:', FinalDom)
+        print(NIters, 'Iterations')
+
+        if SaveData:
+            self.SaveData()
+
+        return NIters
+
+
     def SaveData(self):
-        print('saved at ', self.Filename)
-        pickle_out = open(self.Filename, 'wb')
+        
+        
+
+        FilenameData = [str(self.GetNumberOfSteps()),
+                        str(self.GetDimension()),
+                        ''.join(random.choice(string.ascii_lowercase) for i in range(4)), 
+                        ''.join(datetime.datetime.today().strftime("%m-%d %H:%M"))
+                        ]
+        Filename = "pkl/" + FilenameData[0] + '_' + FilenameData[1] + '_' + FilenameData[2] + ' - ' + FilenameData[-1] + '.pkl'
+        print('saved at ', Filename)
+        pickle_out = open(Filename, 'wb')
         pk.dump(self.AllData, pickle_out)
         pickle_out.close()
         self.AlreadyRun = True
