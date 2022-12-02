@@ -28,7 +28,7 @@ class Metrics: #inherits methods
         self.Dimension = int(np.sqrt(self.NoAgents))
 
 
-        self.KeyMapping = {"R": 0, "P": 1, "S": 2}
+        self.KeyMapping = {"R": 0, "P": 1, "S": 2, "E":3}
         self.colorlist = ["red", "green", "blue", "white"]
 
         # dk what this is doing
@@ -48,10 +48,11 @@ class Metrics: #inherits methods
 
         tsteps = np.linspace(0,self.NoIters, self.NoIters)#is there a better way to do this?
         #need to change this to account for empty cells
-        N = np.zeros((3,self.NoIters))
+        N = np.zeros((4,self.NoIters))
         for j in range(self.NoIters):
             for i in range(self.NoAgents):
                 if self.AgentArray[j][i] is None:
+                    N[self.KeyMapping.get("E")][j] += 1
                     continue
                 Move = self.AgentArray[j][i].GetMove()
                 N[self.KeyMapping.get(Move)][j] += 1
@@ -59,10 +60,27 @@ class Metrics: #inherits methods
         ax.plot(tsteps, N[0], color = 'red', label = 'Rock')
         ax.plot(tsteps, N[1] , color = 'green', label = 'Paper')
         ax.plot(tsteps, N[2] , color = 'blue', label = 'Scissors')
-        ax.plot(tsteps, N[0]+N[1]+N[2] , color = 'black', label = 'Total')
+        ax.plot(tsteps, N[0]+N[1]+N[2]+N[3] , color = 'black', label = 'Total')
         ax.legend(title = '', prop={'size': 8})
         #plt.savefig('.png', dpi = 600)
         plt.show()
+
+    def MeanMaxRPS(self):
+
+        N = np.zeros((3, self.NoIters))
+        for j in range(self.NoIters):
+            for i in range(self.NoAgents):
+                if self.AgentArray[j][i] is None:
+                    continue
+                Move = self.AgentArray[j][i].GetMove()
+                N[self.KeyMapping.get(Move)][j] += 1
+        LastTenSlice = N[:,-int(0.1*self.NoIters):]
+        MaxTenSlice = [max(LastTenSlice[:,i]) for i in range(len(LastTenSlice[0]))]
+
+        OverallStd = np.mean([np.std(N[0]), np.std(N[1]), np.std(N[2])])
+
+        return [np.mean(MaxTenSlice), np.std(MaxTenSlice), OverallStd]
+
 
     def PlotNormRPSAmount(self):
         fig, ax = plt.subplots(1, 1, figsize=(10, 6))

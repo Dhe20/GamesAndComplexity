@@ -37,9 +37,16 @@ class Iterator(Grid):
     def Run(self,
     SaveData = False, KillOrBeKilled = False,
     KillOrBeKilledAndLearn = False, Birth = False,
-    Murder = False, LifeAndDeath = False, UnoReverse = False):
+    Murder = False, LifeAndDeath = False, UnoReverse = False,
+    BProb = None, MProb = None):
 
-        for i in tqdm(range(0, self.Iterations)):
+        if not BProb:
+            BProb = 0.25
+        if not MProb:
+            MProb = 0.25
+
+        # for i in tqdm(range(0, self.Iterations)):
+        for i in range(0, self.Iterations):
 
             localcopy = copy.deepcopy(self.Agents)
             self.AllData.append(localcopy)
@@ -47,11 +54,11 @@ class Iterator(Grid):
             #i as an argument to add timed decay
             self.UpdateAllDists(i, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn)
             if Murder:
-                self.Murder()
+                self.Murder(MProb = MProb)
             if Birth:
-                self.BirthCells()
+                self.BirthCells(BProb = BProb)
             if LifeAndDeath:
-                self.LifeAndDeath()
+                self.LifeAndDeath(BProb = BProb, MProb = MProb)
             if UnoReverse:
                 self.UnoReverseLifeAndDeath()
             self.UpdateAllMoves()
@@ -61,7 +68,12 @@ class Iterator(Grid):
     def RunUntilConvergence(self,
     SaveData = False, KillOrBeKilled = False,
     KillOrBeKilledAndLearn = False, Birth = False,
-    Murder = False, LifeAndDeath = False):
+    Murder = False, LifeAndDeath = False, BProb = None, MProb = None):
+
+        if not BProb:
+            BProb = 0.25
+        if not MProb:
+            MProb = 0.25
 
         NIters = 0
         while True: #oops
@@ -76,11 +88,11 @@ class Iterator(Grid):
             self.UpdateAllDists(None, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn)
 
             if Murder:
-                self.Murder()
+                self.Murder(MProb = MProb)
             if Birth:
-                self.BirthCells()
+                self.BirthCells(BProb = BProb)
             if LifeAndDeath:
-                self.LifeAndDeath()
+                self.LifeAndDeath(BProb = BProb, MProb = MProb)
 
             self.UpdateAllMoves()
 
@@ -151,7 +163,6 @@ class Iterator(Grid):
     def UpdateAllDists(self, TimeStep, KillOrBeKilled = False, KillOrBeKilledAndLearn = False):
         for i in range(0, self.Dimension**2): #changed this loop to make it easier to convert adj cell
 
-            i
             if self.Agents[i] is None:
                 continue
 
@@ -229,13 +240,13 @@ class Iterator(Grid):
         # else: NewDist = self.Agents[k].GetProbabilityDist()
         # return NewDist
 
-    def BirthCells(self, Prob = 0.25):
+    def BirthCells(self, BProb = 0.25):
         D = self.Dimension
         #define probabilities (arrays for easy addition)
         ConversionProbDict = {
-            "R" : np.array([Prob,0,0]),
-            "P" : np.array([0,Prob,0]),
-            "S" : np.array([0,0,Prob]),
+            "R" : np.array([BProb,0,0]),
+            "P" : np.array([0,BProb,0]),
+            "S" : np.array([0,0,BProb]),
         }
 
         BirthedProbDict = {
@@ -275,14 +286,14 @@ class Iterator(Grid):
         self.Agents = self.AgentsGrid.flatten().tolist()
 
 
-    def LifeAndDeath(self, ProbLifeSingle = 0.25, ProbDeathSingle = 0.25):
+    def LifeAndDeath(self, BProb = 0.25, MProb = 0.25):
         # combining the identical method for probabilities
         D = self.Dimension
         #define probabilities
         ConversionProbDict = {
-            "R" : np.array([ProbLifeSingle,0,0,0]), #
-            "P" : np.array([0,ProbLifeSingle,0,0]), # last 0 because there is 0 probability of death
-            "S" : np.array([0,0,ProbLifeSingle,0]), #
+            "R" : np.array([BProb,0,0,0]), #
+            "P" : np.array([0,BProb,0,0]), # last 0 because there is 0 probability of death
+            "S" : np.array([0,0,BProb,0]), #
         }
         #define input for RPS
         OutcomeDict = {
@@ -301,7 +312,7 @@ class Iterator(Grid):
                 if self.AgentsGrid[j,i] is not None:
                     AgentRecentScore = self.AgentsGrid[j,i].GetRecentScore()
                     if AgentRecentScore < 0:
-                        ProbDeath = ProbDeathSingle*abs(AgentRecentScore)
+                        ProbDeath = MProb*abs(AgentRecentScore)
                         PMat = np.array([0,0,0,ProbDeath], dtype = float)
                         PMat = np.append(PMat, 1-ProbDeath)#append P(DoNothing)
                     else:
