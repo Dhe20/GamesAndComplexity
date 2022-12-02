@@ -17,12 +17,13 @@ import datetime
 
 
 class Iterator(Grid):
-    def __init__(self, Dimension, NumberOfSteps, Uniform = False, Ternary = False, EmptyCellCount=0, Seed=None, Probs = None):
+    def __init__(self, Dimension, NumberOfSteps, Uniform = False, Ternary = False,
+                 EmptyCellCount=0, Seed=None, Probs = None, ProbsDist = None):
 
         #Take all of Grid's methods and attributes:
         super().__init__(
                         Dimension = Dimension, EmptyCellCount = EmptyCellCount,
-                         Uniform = Uniform, Ternary = Ternary, Seed=Seed, Probs = Probs)
+                         Uniform = Uniform, Ternary = Ternary, Seed=Seed, Probs = Probs, ProbsDist = ProbsDist)
         #Adding storage for PKL and iterations
         self.Iterations = NumberOfSteps
         self.FileName = ""
@@ -68,7 +69,7 @@ class Iterator(Grid):
     def RunUntilConvergence(self,
     SaveData = False, KillOrBeKilled = False,
     KillOrBeKilledAndLearn = False, Birth = False,
-    Murder = False, LifeAndDeath = False, BProb = None, MProb = None):
+    Murder = False, LifeAndDeath = False, BProb = None, MProb = None, Winner = False):
 
         if not BProb:
             BProb = 0.25
@@ -113,7 +114,10 @@ class Iterator(Grid):
         if SaveData:
             self.SaveData()
 
-        return NIters
+        if Winner:
+            return NIters, FinalDom
+        else:
+            return NIters
 
 
     def SaveData(self):

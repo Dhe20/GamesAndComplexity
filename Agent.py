@@ -1,13 +1,14 @@
 
 from WeightsAndMoves import WeightsAndMoves;
 import numpy as np;
+import random as random
 
 class Agent():
 
     #Stores data for Individual RPS Agent with fixed Probability Dist & "Scope" to change the Dist.
     #Stores ID & Location (equivalent at t=0), as well as first move.
     #Stores Score of recent round (can be changed to cumulative) starting at 0
-    def __init__(self, index, Uniform = False, Ternary = False, Probs = None, Seed = None):
+    def __init__(self, index, Uniform = False, Ternary = False, Probs = None, Seed = None, ProbsDist = None):
         self.Seed = Seed
         self.Id = index
         self.Location = index #maybe have these different?
@@ -15,6 +16,11 @@ class Agent():
             self.DistributionAndMove = WeightsAndMoves(Uniform = Uniform, Ternary = Ternary, Seed = self.Seed)
         elif Probs:
             self.DistributionAndMove = WeightsAndMoves(Probs = Probs, Seed = self.Seed)
+        elif ProbsDist:
+            Weights = ProbsDist
+            Outcomes = [[1,0,0],[0,1,0],[0,0,1]]
+            ProbsDistOutcome = random.choices(Outcomes, Weights)[0]
+            self.DistributionAndMove = WeightsAndMoves(Probs=ProbsDistOutcome, Seed=self.Seed)
         else:
             self.DistributionAndMove = WeightsAndMoves(Uniform = True, Seed = self.Seed)
         self.Move = self.DistributionAndMove.MakeAMove()
