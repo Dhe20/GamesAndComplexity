@@ -185,6 +185,21 @@ class Grid:
         #ScoreArray[:,1][(5)%5]
         pass
 
+    def CountAgents(self):
+        Count = np.array([0,0,0,0])
+        D = self.Dimension
+        for j in range(D):
+            for i in range(D):
+                # empty cell condition
+                if self.AgentsGrid[j,i] is None:
+                    Count[3] += 1
+                    continue
+
+                Move = self.AgentsGrid[j,i].GetMove()
+                Index = self.KeyMapping.get(Move)
+                Count[Index] += 1
+        return Count
+
 
     '''GENERATOR METHODS'''
 
@@ -393,7 +408,6 @@ class Grid:
         for UniqueMove in UniqueMovesPresent:
             ColorsOnBoard.append(self.colorlist[UniqueMove])
         return ColorsOnBoard
-    
 
 #Example Script for debugging -> sum of score list should be 0 (net zero game)
 #P.S. comment out before running Iterator
