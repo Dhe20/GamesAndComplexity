@@ -17,12 +17,12 @@ from Agent import Agent
 
 
 class Iterator(Grid):
-    def __init__(self, Dimension, NumberOfSteps, Uniform = False, Ternary = False, EmptyCellCount=0, Seed=None):
+    def __init__(self, Dimension, NumberOfSteps, Uniform = False, Ternary = False, EmptyCellCount=0, Seed=None, Probs = None):
 
         #Take all of Grid's methods and attributes:
         super().__init__(
                         Dimension = Dimension, EmptyCellCount = EmptyCellCount,
-                         Uniform = Uniform, Ternary = Ternary, Seed=Seed)
+                         Uniform = Uniform, Ternary = Ternary, Seed=Seed, Probs = Probs)
         #Adding storage for PKL and iterations
         self.Iterations = NumberOfSteps
         self.FileName = ""
@@ -36,7 +36,7 @@ class Iterator(Grid):
         # create a local /pkl dir
         # pkl/NoIterations_GridSize_5letterstring.pkl
         if Seed is not None:
-            print("Seed: " + str(Seed))
+            # print("Seed: " + str(Seed))
             random.seed(Seed)
             self.Filename = "pkl/" + FilenameData[0] + '_' + FilenameData[1] + '_' + FilenameData[-1] +  '_' + str(Seed)+ '.pkl'
         else: self.Filename = "pkl/" + FilenameData[0] + '_' + FilenameData[1] + '_' + FilenameData[-1] + '.pkl'

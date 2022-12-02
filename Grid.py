@@ -14,7 +14,7 @@ class Grid:
     # List of Objects (Agent Instances)
     #Dimension is Width of Grid
 
-    def __init__(self, Dimension, EmptyCellCount = 0, Uniform = False, Ternary = False, Seed = None):
+    def __init__(self, Dimension, EmptyCellCount = 0, Uniform = False, Ternary = False, Seed = None, Probs = None):
         '''
         EmptyCellCount: (int) number of empty cells
         '''
@@ -27,7 +27,7 @@ class Grid:
         #forms a list of Agent instances
         AgentList = []
         for i in range(0,self.Dimension**2):
-            AgentList.append(Agent(i, Uniform = Uniform, Ternary = Ternary, Seed = random.randint(0,1e6)))
+            AgentList.append(Agent(i, Uniform = Uniform, Ternary = Ternary, Seed = random.randint(0,1e6), Probs = Probs))
 
         ###EmptyCells###
         if isinstance(EmptyCellCount, int) == False:
