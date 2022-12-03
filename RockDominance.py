@@ -44,7 +44,7 @@ MeanIters = [RockDominance.query('Rock_Dominance == @val').Convergence_Iter.mean
 StdIters = [RockDominance.query('Rock_Dominance == @val').Convergence_Iter.std()
              for val in RockVals]
 
-RockWon = [RockDominance.query('Rock_Dominance == @val').Rock_Won.sum()/10
+RockWon = [RockDominance.query('Rock_Dominance == @val').Rock_Won.sum()/len(RockDominance.query('Rock_Dominance == @val'))
              for val in RockVals]
 
 RockDominanceMeta = pd.DataFrame({"Rock_Dominance": RockVals, "Mean_Iters": MeanIters, "Std_Iters": StdIters,
@@ -52,10 +52,10 @@ RockDominanceMeta = pd.DataFrame({"Rock_Dominance": RockVals, "Mean_Iters": Mean
 
 RockDominanceMeta.to_csv("RockDominanceMeta.csv")
 print(RockDominanceMeta.head())
-plt.errorbar(RockDominanceMeta.Rock_Dominance.values, RockDominanceMeta.Mean_Iters.values,
-             yerr = RockDominanceMeta.Std_Iters.values)
+# plt.errorbar(RockDominanceMeta.Rock_Dominance.values, RockDominanceMeta.Mean_Iters.values,
+#              yerr = RockDominanceMeta.Std_Iters.values)
+# plt.show()
+
+plt.plot(RockDominanceMeta.Rock_Dominance.values, RockDominanceMeta.Rock_Won.values)
 plt.show()
-
-
-
 
