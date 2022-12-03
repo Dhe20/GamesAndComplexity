@@ -46,6 +46,7 @@ class Iterator(Grid):
             self.CheckAllWinners()
             #i as an argument to add timed decay
             self.UpdateAllDists(i, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn)
+
             if Murder:
                 self.Murder()
             if Birth:
@@ -59,7 +60,7 @@ class Iterator(Grid):
     def RunUntilConvergence(self, 
     SaveData = False, KillOrBeKilled = False, 
     KillOrBeKilledAndLearn = False, Birth = False,
-    Murder = False, LifeAndDeath = False):
+    Murder = False, LifeAndDeath = False, AppendData = False):
 
         NIters = 0
         while True: #oops
@@ -68,8 +69,9 @@ class Iterator(Grid):
             if self.Dimension**2 in Count:
                 break
             #same method as with Run
-            localcopy = copy.deepcopy(self.Agents)
-            self.AllData.append(localcopy)
+            if AppendData:
+                localcopy = copy.deepcopy(self.Agents)
+                self.AllData.append(localcopy)
             self.CheckAllWinners()
             self.UpdateAllDists(None, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn)
             
@@ -109,7 +111,7 @@ class Iterator(Grid):
         FilenameData = [str(self.GetNumberOfSteps()),
                         str(self.GetDimension()),
                         ''.join(random.choice(string.ascii_lowercase) for i in range(4)), 
-                        ''.join(datetime.datetime.today().strftime("%m-%d %H:%M"))
+                            
                         ]
         Filename = "pkl/" + FilenameData[0] + '_' + FilenameData[1] + '_' + FilenameData[2] + ' - ' + FilenameData[-1] + '.pkl'
         print('saved at ', Filename)
