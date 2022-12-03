@@ -26,8 +26,15 @@ for i in range(1,20):
 
 Times = pd.DataFrame.from_dict(TimeDict)
 Times.to_csv("TimeComplexity.csv")
-print(Times.head())
-print(Times.mean().values)
-print(Times.std().values)
-plt.errorbar(Times.columns,Times.mean().values, yerr = Times.std().values)
+##
+Times = pd.read_csv("/Users/daneverett/Downloads/TimeComplexity.csv").iloc[:, 1:10]
+Y = Times.mean().values
+Yerr = Times.std().values
+LogY = np.log(np.array(Y))
+
+X = [int(x) for x in list(Times.columns)]
+LogX = np.log(np.array(X))
+
+plt.errorbar(X, Y, yerr = Yerr)
+# plt.errorbar(LogX,LogY)
 plt.show()

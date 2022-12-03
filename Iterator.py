@@ -69,12 +69,16 @@ class Iterator(Grid):
     def RunUntilConvergence(self,
     SaveData = False, KillOrBeKilled = False,
     KillOrBeKilledAndLearn = False, Birth = False,
-    Murder = False, LifeAndDeath = False, BProb = None, MProb = None, Winner = False):
+    Murder = False, LifeAndDeath = False, BProb = None,
+    MProb = None, Winner = False, ConvergenceBound = None):
 
         if not BProb:
             BProb = 0.25
         if not MProb:
             MProb = 0.25
+        if ConvergenceBound:
+            Boundary = ConvergenceBound
+        else: Boundary = 10e6
 
         NIters = 0
         while True: #oops
@@ -99,17 +103,18 @@ class Iterator(Grid):
 
             #count the number of iterations
             NIters += 1
-            if NIters>=10e6:
-                print('1 million iterations and no convergence. Give up')
-                return NIters
+            if NIters>=Boundary:
+                print(str(Boundary) + 'iterations and no convergence. Give up')
+                return -1, -1
 
         try:
             FinalDom = self.Agents[0].GetMove()
         except AttributeError: # accounts for None
             FinalDom = 'E'
 
-        print('Final Agent:', FinalDom)
-        print(NIters, 'Iterations')
+        # print('Final Agent:', FinalDom)
+        # print(NIters, 'Iterations')
+
 
         if SaveData:
             self.SaveData()
