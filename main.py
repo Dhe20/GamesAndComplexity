@@ -25,7 +25,6 @@ from tqdm import tqdm
 # # Eval.PlotRPSAmount()
 
 
-
 x = Iterator(300, 1000, Ternary = True)#, EmptyCellCount= 150)
 x.EmptyGrid()# x.AddAgent('R',[0,1])
 # x.AddAgent('R',[1,2])
