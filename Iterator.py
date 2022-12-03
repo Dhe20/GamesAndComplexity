@@ -54,6 +54,7 @@ class Iterator(Grid):
             self.CheckAllWinners()
             #i as an argument to add timed decay
             self.UpdateAllDists(i, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn)
+
             if Murder:
                 self.Murder(MProb = MProb)
             if Birth:
@@ -87,8 +88,9 @@ class Iterator(Grid):
             if self.Dimension**2 in Count:
                 break
             #same method as with Run
-            localcopy = copy.deepcopy(self.Agents)
-            self.AllData.append(localcopy)
+            if AppendData:
+                localcopy = copy.deepcopy(self.Agents)
+                self.AllData.append(localcopy)
             self.CheckAllWinners()
             self.UpdateAllDists(None, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn)
 
