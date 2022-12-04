@@ -30,7 +30,7 @@ class Iterator(Grid):
         self.AlreadyRun = False
         self.AllData = []
         self.Seed = Seed
-
+        self.AllGrids = []
 
     def GetNumberOfSteps(self):
         return self.Iterations
@@ -39,18 +39,26 @@ class Iterator(Grid):
     SaveData = False, KillOrBeKilled = False,
     KillOrBeKilledAndLearn = False, Birth = False,
     Murder = False, LifeAndDeath = False, UnoReverse = False,
-    BProb = None, MProb = None):
+    BProb = None, MProb = None, SaveGrids = False):
 
         if not BProb:
             BProb = 0.25
         if not MProb:
             MProb = 0.25
 
+        if SaveGrids:
+            Huge3DArray = np.zeros((self.Iterations,self.Dimension, self.Dimension),dtype=str)
+
         # for i in tqdm(range(0, self.Iterations)):
         for i in range(0, self.Iterations):
+            
+            if SaveData:
+                localcopy = copy.deepcopy(self.Agents)
+                self.AllData.append(localcopy)
+            if SaveGrids:
+                MoveArray = copy.deepcopy(self.GetMoveArray())
+                Huge3DArray[i] = MoveArray
 
-            localcopy = copy.deepcopy(self.Agents)
-            self.AllData.append(localcopy)
             self.CheckAllWinners()
             #i as an argument to add timed decay
             self.UpdateAllDists(i, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn)
@@ -64,14 +72,17 @@ class Iterator(Grid):
             if UnoReverse:
                 self.UnoReverseLifeAndDeath()
             self.UpdateAllMoves()
+        
         if SaveData:
             self.SaveData()
+        if SaveGrids:
+            self.SaveData(Data=Huge3DArray)
 
     def RunUntilConvergence(self,
     SaveData = False, KillOrBeKilled = False,
     KillOrBeKilledAndLearn = False, Birth = False,
     Murder = False, LifeAndDeath = False, BProb = None,
-    MProb = None, Winner = False, ConvergenceBound = None):
+    MProb = None, Winner = False, AppendData = False, ConvergenceBound = None):
 
         if not BProb:
             BProb = 0.25
@@ -127,7 +138,7 @@ class Iterator(Grid):
             return NIters
 
 
-    def SaveData(self):
+    def SaveData(self, Data = None):
 
 
 
@@ -137,9 +148,10 @@ class Iterator(Grid):
                         ''.join(datetime.datetime.today().strftime("%m-%d %H:%M"))
                         ]
 
-        FilenameData = [str(self.GetNumberOfSteps()),
-                        str(self.GetDimension()),
-                        ''.join(random.choice(string.ascii_lowercase) for i in range(5)), ]
+        #merge conflict? why is this defined twice?
+        # FilenameData = [str(self.GetNumberOfSteps()),
+        #                 str(self.GetDimension()),
+        #                 ''.join(random.choice(string.ascii_lowercase) for i in range(5)), ]
         # create a local /pkl dir
         # pkl/NoIterations_GridSize_5letterstring.pkl
         if self.Seed is not None:
@@ -153,7 +165,10 @@ class Iterator(Grid):
 
         print('saved at ', self.Filename)
         pickle_out = open(self.Filename, 'wb')
-        pk.dump(self.AllData, pickle_out)
+        if Data is None:
+            pk.dump(self.AllData, pickle_out)
+        else:
+            pk.dump(Data, pickle_out)
         pickle_out.close()
         self.AlreadyRun = True
 
