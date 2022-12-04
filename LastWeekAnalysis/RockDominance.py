@@ -34,7 +34,7 @@ print(RockDominance.head())
 RockDominance.to_csv("RockDominance.csv")
 
 ##Eval
-RockDominance = pd.read_csv("RockDominance.csv")
+RockDominance = pd.read_csv("../RockDominance.csv")
 
 RockVals = RockDominance.Rock_Dominance.unique()
 

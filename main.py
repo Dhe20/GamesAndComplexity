@@ -8,7 +8,10 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 
-
+x = Iterator(5,1000 , Seed= 0)
+x.VisualiseGrid()
+x.Run(LifeAndDeath=True, SaveGrids = True,  BProb = 0.25, MProb = 0.25)
+x.VisualiseGrid()
 
 
 # x.Metrics().AnimateEvolution(50)
@@ -25,17 +28,17 @@ from tqdm import tqdm
 # # Eval.PlotRPSAmount()
 
 
-x = Iterator(300, 1000, Ternary = True)#, EmptyCellCount= 150)
-x.EmptyGrid()# x.AddAgent('R',[0,1])
-# x.AddAgent('R',[1,2])
-# x.AddAgent('R',[2,1])
-x.AddAgent('R',[0,0])
-x.VisualiseGrid()
-x.CountAgents()
-#x.Run(LifeAndDeath=True, SaveData=False)
-#x.RunUntilConvergence(LifeAndDeath=True)
-#x.Metrics().AnimateEvolution(20)
-x.VisualiseGrid()
+# x = Iterator(300, 1000, Ternary = True)#, EmptyCellCount= 150)
+# x.EmptyGrid()# x.AddAgent('R',[0,1])
+# # x.AddAgent('R',[1,2])
+# # x.AddAgent('R',[2,1])
+# x.AddAgent('R',[0,0])
+# x.VisualiseGrid()
+# x.CountAgents()
+# #x.Run(LifeAndDeath=True, SaveData=False)
+# #x.RunUntilConvergence(LifeAndDeath=True)
+# #x.Metrics().AnimateEvolution(20)
+# x.VisualiseGrid()
 
 '''
 #sanity check

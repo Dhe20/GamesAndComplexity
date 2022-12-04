@@ -39,7 +39,7 @@ PopulationRateGrid.to_csv("PopulationRateGrid.csv")
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
 
-PopulationRateGrid = pd.read_csv("PopulationRateGrid.csv")
+PopulationRateGrid = pd.read_csv("../PopulationRateGrid.csv")
 fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 
 # Make data.
@@ -66,7 +66,7 @@ plt.show()
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
 
-PopulationRateGrid = pd.read_csv("PopulationRateGrid.csv")
+PopulationRateGrid = pd.read_csv("../PopulationRateGrid.csv")
 fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 
 # Make data.
