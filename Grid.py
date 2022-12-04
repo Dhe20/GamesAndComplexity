@@ -408,6 +408,17 @@ class Grid:
         for UniqueMove in UniqueMovesPresent:
             ColorsOnBoard.append(self.colorlist[UniqueMove])
         return ColorsOnBoard
+    
+    def GetMoveArray(self):
+        D = self.Dimension
+        MoveArray = np.zeros((D,D), dtype = str)
+        for j in range(D):
+            for i in range(D):
+                if self.AgentsGrid[j,i] is None:
+                    MoveArray[j,i] = 'E'
+                    continue
+                MoveArray[j,i] = self.AgentsGrid[j,i].GetMove() #we need vectorisation. surely this can be applied to the elemtns 💀
+        return MoveArray
 
 #Example Script for debugging -> sum of score list should be 0 (net zero game)
 #P.S. comment out before running Iterator
