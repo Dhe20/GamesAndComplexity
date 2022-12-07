@@ -8,7 +8,8 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 
-x = Iterator(5,1000 , Seed= 0)
+3
+x = Iterator(600,1000, Seed= 0)
 x.VisualiseGrid()
 x.Run(LifeAndDeath=True, SaveGrids = True,  BProb = 0.25, MProb = 0.25)
 x.VisualiseGrid()

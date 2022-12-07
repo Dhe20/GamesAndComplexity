@@ -34,7 +34,7 @@ print(RockDominance.head())
 RockDominance.to_csv("RockDominance.csv")
 
 ##Eval
-RockDominance = pd.read_csv("../RockDominance.csv")
+RockDominance = pd.read_csv("/Users/daneverett/Downloads/RockDominance.csv")
 
 RockVals = RockDominance.Rock_Dominance.unique()
 
@@ -50,12 +50,12 @@ RockWon = [RockDominance.query('Rock_Dominance == @val').Rock_Won.sum()/len(Rock
 RockDominanceMeta = pd.DataFrame({"Rock_Dominance": RockVals, "Mean_Iters": MeanIters, "Std_Iters": StdIters,
                               "Rock_Won": RockWon})
 
-RockDominanceMeta.to_csv("RockDominanceMeta.csv")
-print(RockDominanceMeta.head())
-# plt.errorbar(RockDominanceMeta.Rock_Dominance.values, RockDominanceMeta.Mean_Iters.values,
-#              yerr = RockDominanceMeta.Std_Iters.values)
-# plt.show()
-
-plt.plot(RockDominanceMeta.Rock_Dominance.values, RockDominanceMeta.Rock_Won.values)
+# RockDominanceMeta.to_csv("RockDominanceMeta.csv")
+# print(RockDominanceMeta.head())
+plt.errorbar(RockDominanceMeta.Rock_Dominance.values, RockDominanceMeta.Mean_Iters.values,
+             yerr = RockDominanceMeta.Std_Iters.values)
 plt.show()
+
+# plt.plot(RockDominanceMeta.Rock_Dominance.values, RockDominanceMeta.Rock_Won.values)
+# plt.show()
 

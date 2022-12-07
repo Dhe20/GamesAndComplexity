@@ -9,6 +9,8 @@ import random
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
+##
+
 
 TimeDict = {}
 
@@ -36,5 +38,5 @@ X = [int(x) for x in list(Times.columns)]
 LogX = np.log(np.array(X))
 
 plt.errorbar(X, Y, yerr = Yerr)
-# plt.errorbar(LogX,LogY)
+plt.errorbar(LogX,LogY)
 plt.show()

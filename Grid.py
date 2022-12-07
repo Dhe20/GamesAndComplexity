@@ -18,16 +18,20 @@ class Grid:
         '''
         EmptyCellCount: (int) number of empty cells
         '''
-        self.Seed = Seed
-        if Seed is not None:
-            random.seed(Seed)
+
         self.Dimension = Dimension
         self.KeyMapping = {"R": 0, "P": 1, "S": 2, "E": 3}
         self.colormap = ["red", "green", "blue", "white"]
+
+        self.Seed = Seed
+        if Seed is not None:
+            random.seed(Seed)
+            self.AgentSeeds = [i for i in range(self.Dimension**2)]
+            random.shuffle(self.AgentSeeds)
         #forms a list of Agent instances
         AgentList = []
         for i in range(0,self.Dimension**2):
-            AgentList.append(Agent(i, Uniform = Uniform, Ternary = Ternary, Seed = random.randint(0,1e6), ProbsDist = ProbsDist))
+            AgentList.append(Agent(i, Uniform = Uniform, Ternary = Ternary, Seed = self.AgentSeeds[i], ProbsDist = ProbsDist))
 
         ###EmptyCells###
         if isinstance(EmptyCellCount, int) == False:

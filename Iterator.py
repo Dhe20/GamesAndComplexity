@@ -49,8 +49,8 @@ class Iterator(Grid):
         if SaveGrids:
             Huge3DArray = np.zeros((self.Iterations,self.Dimension, self.Dimension),dtype=str)
 
-        # for i in tqdm(range(0, self.Iterations)):
-        for i in range(0, self.Iterations):
+        for i in tqdm(range(0, self.Iterations)):
+        # for i in range(0, self.Iterations):
             
             if SaveData:
                 localcopy = copy.deepcopy(self.Agents)
@@ -158,7 +158,7 @@ class Iterator(Grid):
             # print("Seed: " + str(Seed))
             random.seed(self.Seed)
             self.Filename = "pkl/" + FilenameData[0] + '_' + FilenameData[1] + '_' + FilenameData[-1] + '_' + str(
-                self.seed) + '.pkl'
+                self.Seed) + '.pkl'
         else:
             self.Filename = "pkl/" + FilenameData[0] + '_' + FilenameData[1] + '_' + FilenameData[-1] + '.pkl'
 
@@ -371,7 +371,7 @@ class Iterator(Grid):
                     self.AgentsGrid[j,i] = None
                     continue
                 BirthedProb = OutcomeDict.get(Outcome)
-                self.AgentsGrid[j,i] = Agent(index = D*j+i, Probs=BirthedProb, Seed = random.randint(0,1e6))
+                self.AgentsGrid[j,i] = Agent(index = D*j+i, Probs=BirthedProb, Seed = (i+1)*random.randint(0,1e6))
         self.Agents = self.AgentsGrid.flatten().tolist()
 
 
