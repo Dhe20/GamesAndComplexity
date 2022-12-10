@@ -177,6 +177,28 @@ class Grid:
 
         ScoreArray = np.reshape(ScoreList, (self.Dimension,self.Dimension)) # to make analysis a little easier
         return ScoreArray
+    
+    def ComputeGrad(self, Array):
+        Left = np.roll(Array, 1,axis = 1)
+        Right = np.roll(Array, -1, axis = 1)
+        Up = np.roll(Array, 1, axis = 0)
+        Down = np.roll(Array,-1, axis = 0)
+        
+        HorizontalGrad = Right-Left
+        VerticalGradient = Up-Down
+        #X,Y = np.meshgrid(np.arange(0, self.Dimension),np.arange(0, self.Dimension))
+        #plt.quiver(X,Y,HorizontalGrad,VerticalGradient)
+        return HorizontalGrad, VerticalGradient
+
+    def ComputeLaplaceComponent(self, Array):
+        Left = np.roll(Array, 1,axis = 1)
+        Right = np.roll(Array, -1, axis = 1)
+        Up = np.roll(Array, 1, axis = 0)
+        Down = np.roll(Array,-1, axis = 0)
+        
+        LaplacianComponent = Right + Left + Up + Down - Array
+        X,Y = np.meshgrid(np.arange(0, self.Dimension),np.arange(0, self.Dimension))
+        return LaplacianComponent
 
     def CheckAroundAgent(self, index):
         pass
@@ -419,6 +441,7 @@ class Grid:
                     continue
                 MoveArray[j,i] = self.AgentsGrid[j,i].GetMove() #we need vectorisation. surely this can be applied to the elemtns 💀
         return MoveArray
+
 
 #Example Script for debugging -> sum of score list should be 0 (net zero game)
 #P.S. comment out before running Iterator

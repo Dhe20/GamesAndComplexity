@@ -31,6 +31,7 @@ class Iterator(Grid):
         self.AllData = []
         self.Seed = Seed
         self.AllGrids = []
+        self.AllGradients = []
 
     def GetNumberOfSteps(self):
         return self.Iterations
@@ -39,7 +40,8 @@ class Iterator(Grid):
     SaveData = False, KillOrBeKilled = False,
     KillOrBeKilledAndLearn = False, Birth = False,
     Murder = False, LifeAndDeath = False, UnoReverse = False,
-    BProb = None, MProb = None, SaveGrids = False):
+    BProb = None, MProb = None, SaveGrids = False, AppendData = True,
+    AnimateGradient = True):
 
         if not BProb:
             BProb = 0.25
@@ -49,17 +51,21 @@ class Iterator(Grid):
         if SaveGrids:
             Huge3DArray = np.zeros((self.Iterations,self.Dimension, self.Dimension),dtype=str)
 
-        # for i in tqdm(range(0, self.Iterations)):
-        for i in range(0, self.Iterations):
+        for i in tqdm(range(0, self.Iterations)):
             
-            if SaveData:
+            ScoreArray = self.CheckAllWinners()
+
+            if AnimateGradient:
+                HorizontalGradient, VerticalGradient = self.ComputeGrad(ScoreArray)
+                Laplace = self.ComputeGrad(ScoreArray)
+                gradlocalcopy = copy.deepcopy([HorizontalGradient,VerticalGradient])
+                self.AllGradients.append(gradlocalcopy)
+
+            if AppendData:
                 localcopy = copy.deepcopy(self.Agents)
                 self.AllData.append(localcopy)
-            if SaveGrids:
-                MoveArray = copy.deepcopy(self.GetMoveArray())
-                Huge3DArray[i] = MoveArray
+        
 
-            self.CheckAllWinners()
             #i as an argument to add timed decay
             self.UpdateAllDists(i, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn)
 
@@ -73,10 +79,19 @@ class Iterator(Grid):
                 self.UnoReverseLifeAndDeath()
             self.UpdateAllMoves()
         
+        
+
         if SaveData:
-            self.SaveData()
+            if AnimateGradient:
+                self.SaveData(self.AllGradients)
+                pass
+            else:
+                self.SaveData()
+                pass
+
         if SaveGrids:
             self.SaveData(Data=Huge3DArray)
+            pass
 
     def RunUntilConvergence(self,
     SaveData = False, KillOrBeKilled = False,
@@ -93,7 +108,7 @@ class Iterator(Grid):
         else: Boundary = 10e6
 
         NIters = 0
-        while True: #oops
+        for i in tqdm(range(10**6)): #oops
             #check if one of the agents dominates
             Count = self.CountAgents()
             if self.Dimension**2 in Count:
@@ -157,10 +172,10 @@ class Iterator(Grid):
         if self.Seed is not None:
             # print("Seed: " + str(Seed))
             random.seed(self.Seed)
-            self.Filename = "pkl/" + FilenameData[0] + '_' + FilenameData[1] + '_' + FilenameData[-1] + '_' + str(
-                self.seed) + '.pkl'
+            self.Filename = "pklconv/" + FilenameData[0] + '_' + FilenameData[1] + '_' + FilenameData[-1] + '_' + str(
+                self.Seed) + '.pkl'
         else:
-            self.Filename = "pkl/" + FilenameData[0] + '_' + FilenameData[1] + '_' + FilenameData[-1] + '.pkl'
+            self.Filename = "pklconv/" + FilenameData[0] + '_' + FilenameData[1] + '_' + FilenameData[-1] + '.pkl'
 
 
         print('saved at ', self.Filename)
@@ -312,7 +327,7 @@ class Iterator(Grid):
         self.Agents = self.AgentsGrid.flatten().tolist()
 
 
-    def LifeAndDeath(self, BProb = 0.25, MProb = 0.25):
+    def LifeAndDeath(self, BProb = 0.125, MProb = 0.25):
         # combining the identical method for probabilities
         D = self.Dimension
         #define probabilities
@@ -440,7 +455,7 @@ class Iterator(Grid):
         self.Agents = self.AgentsGrid.flatten().tolist()
 
     def Metrics(self):
-        return Metrics(AgentList = self.AllData, Iterator = True)
+        return Metrics(AgentList = self.AllData, Iterator = True, GradientArray=self.AllGradients)
 
 
     

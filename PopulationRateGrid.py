@@ -13,22 +13,23 @@ B = []
 M = []
 Mean = []
 Std = []
-OStd = []
-
+NoIters = []
 for BProbPercent in tqdm(np.linspace(1, 25, N)):
     BProb = BProbPercent / 100
     for MProbPercent in np.linspace(1, 25, N):
         x = Iterator(27, 200, Ternary=True, Seed=0)
         MProb = MProbPercent/100
-        x.Run(LifeAndDeath=True, BProb = BProb, MProb = MProb)
-
+        x.VisualiseGrid()
+        x.Run(LifeAndDeath=True, BProb = BProb, MProb = MProb, SaveData=True)
+        x.VisualiseGrid()
         mean, std, ostd= x.Metrics().MeanMaxRPS()
-
+        noiters = x.Metrics().GetNoIters()
         B.append(BProb)
         M.append(MProb)
+        NoIters.append(noiters)
         Mean.append(mean)
         Std.append(std)
-        OStd.append(ostd)
+        # OStd.append(ostd)
 
 PopulationRateGrid = pd.DataFrame({"Life Rate": B, "Death Rate": M, "Population": Mean, "Std": Std, "Overall Std": OStd})
 print(PopulationRateGrid.head())

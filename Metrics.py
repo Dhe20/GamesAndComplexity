@@ -7,10 +7,10 @@ import matplotlib.animation as ani
 import matplotlib.pyplot as plt
 from matplotlib import colors
 from scipy.fft import fft, fftfreq
-
+from tqdm import tqdm
 class Metrics: #inherits methods
         #weird boilerplate to inherit class variables ...
-    def __init__(self, Filename = "", AgentList = None, Iterator = False):
+    def __init__(self, Filename = "", AgentList = None, Iterator = False, GradientArray = None):
 
         if Iterator:
             self.AgentList = AgentList
@@ -26,7 +26,7 @@ class Metrics: #inherits methods
         self.NoIters = len(self.AgentArray)
         self.NoAgents = len(self.AgentArray.T)#take the transpose
         self.Dimension = int(np.sqrt(self.NoAgents))
-
+        self.GradientArray = GradientArray
 
         self.KeyMapping = {"R": 0, "P": 1, "S": 2, "E":3}
         self.colorlist = ["red", "green", "blue", "white"]
@@ -41,6 +41,9 @@ class Metrics: #inherits methods
 
     def GetArray(self):
         return self.AgentArray
+
+    def GetNoIters(self):
+        return self.NoIters
 
     def PlotRPSAmount(self):
         fig, ax = plt.subplots(1,1, figsize =(10,6))
@@ -81,6 +84,7 @@ class Metrics: #inherits methods
 
         return [np.mean(MaxTenSlice), np.std(MaxTenSlice), OverallStd]
 
+    
 
     def PlotNormRPSAmount(self):
         fig, ax = plt.subplots(1, 1, figsize=(10, 6))
@@ -153,6 +157,22 @@ class Metrics: #inherits methods
         for k in range(3): # find how many RPS at each timestep
             N[k] = np.count_nonzero(AgentData == k-1)
         IterData = [IterAgentData, N] #ADD NEW METRICS TO LIST
+
+    def AnimateGradient(self, intervalms=250):
+        #WIP 
+        fig, ax = plt.subplots(figsize = (5,5))
+        ims = []
+        X,Y = np.meshgrid(np.arange(0,self.Dimension), np.arange(0,self.Dimension))
+        for i in tqdm(range(self.NoIters)):
+            HorizontalGradient, VerticalGradient = self.GradientArray[i]
+            im = ax.quiver(X,Y,HorizontalGradient, VerticalGradient)
+            ims.append([im])
+
+        animation = ani.ArtistAnimation(
+            fig, ims, interval=intervalms,
+            blit=False,repeat_delay=2000
+            )
+        plt.show()
 
     def CheckSimilar(self, iter, IndexA, IndexB):
         if self.AgentArray[iter][IndexA] is None or self.AgentArray[iter][IndexB] is None:

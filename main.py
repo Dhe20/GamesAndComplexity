@@ -25,13 +25,22 @@ from tqdm import tqdm
 # # Eval.PlotRPSAmount()
 
 
-x = Iterator(3, 1000, Ternary = True)#, EmptyCellCount= 150)
-x.OneWideRows()
-x.AddEmptyCell([0,1])
-x.VisualiseGrid()
+x = Iterator(50, 40, Ternary = True, Seed=0)#, EmptyCellCount= 150)
+#x.VisualiseGrid()
 # Arr = x.GetMoveArray()
 # x.CountAgents()
-x.Run(LifeAndDeath=True, SaveData=False, SaveGrids=True)
+#x.Run(KillOrBeKilledAndLearn=True, SaveData=True, SaveGrids=False, AppendData=True, AnimateGradient=True)
+#import
+
+
+import pickle
+#redirect
+pickle_in = open('pklconv/40_50_12-10 22:55_0.pkl', 'rb')
+GradientArray = pickle.load(pickle_in)
+
+Met = Metrics(Filename='pklconv/40_50_12-10 22:45_0.pkl', GradientArray=GradientArray)
+Met.AnimateEvolution(intervalms=125)
+Met.AnimateGradient(intervalms=125)
 #x.RunUntilConvergence(LifeAndDeath=True)
 #x.Metrics().AnimateEvolution(20)
 x.VisualiseGrid()
