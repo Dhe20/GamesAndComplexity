@@ -41,7 +41,7 @@ class Iterator(Grid):
     KillOrBeKilledAndLearn = False, Birth = False,
     Murder = False, LifeAndDeath = False, UnoReverse = False,
     BProb = None, MProb = None, SaveGrids = False, AppendData = True,
-    AnimateGradient = True):
+    AnimateGradient = False, AnimateGradientMod = False):
 
         if not BProb:
             BProb = 0.25
@@ -53,11 +53,17 @@ class Iterator(Grid):
 
         for i in tqdm(range(0, self.Iterations)):
             
-            ScoreArray = self.CheckAllWinners()
-
+            
             if AnimateGradient:
-                HorizontalGradient, VerticalGradient = self.ComputeGrad(ScoreArray)
+                ScoreArray = self.GetMoveArrayNumbers()
+                HorizontalGradient, VerticalGradient = self.ComputeGrad(ScoreArray, Mod=False)
                 Laplace = self.ComputeGrad(ScoreArray)
+                gradlocalcopy = copy.deepcopy([HorizontalGradient,VerticalGradient])
+                self.AllGradients.append(gradlocalcopy)
+            
+            if AnimateGradientMod:
+                AgentArray = self.GetMoveArrayNumbers()
+                HorizontalGradient, VerticalGradient = self.ComputeGrad(AgentArray, Mod=True)
                 gradlocalcopy = copy.deepcopy([HorizontalGradient,VerticalGradient])
                 self.AllGradients.append(gradlocalcopy)
 
@@ -82,7 +88,7 @@ class Iterator(Grid):
         
 
         if SaveData:
-            if AnimateGradient:
+            if AnimateGradient or AnimateGradientMod:
                 self.SaveData(self.AllGradients)
                 pass
             else:

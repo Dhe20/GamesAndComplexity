@@ -25,25 +25,27 @@ from tqdm import tqdm
 # # Eval.PlotRPSAmount()
 
 
-x = Iterator(50, 40, Ternary = True, Seed=0)#, EmptyCellCount= 150)
-#x.VisualiseGrid()
-# Arr = x.GetMoveArray()
-# x.CountAgents()
-#x.Run(KillOrBeKilledAndLearn=True, SaveData=True, SaveGrids=False, AppendData=True, AnimateGradient=True)
-#import
+x = Iterator(40, 50, Ternary = True, Seed=2)#, EmptyCellCount= 150)
+x.VisualiseGrid()
+x.ThreeWideRows()
+x.VisualiseGrid()
+Arr = x.GetMoveArray()
+x.Run(KillOrBeKilledAndLearn=True, SaveData=True, SaveGrids=False, AppendData=True, AnimateGradient=True)
+x.Metrics().AnimateEvolution(intervalms=1000)
 
 
 import pickle
-#redirect
+
 pickle_in = open('pklconv/40_50_12-10 22:55_0.pkl', 'rb')
 GradientArray = pickle.load(pickle_in)
 
 Met = Metrics(Filename='pklconv/40_50_12-10 22:45_0.pkl', GradientArray=GradientArray)
-Met.AnimateEvolution(intervalms=125)
-Met.AnimateGradient(intervalms=125)
+Met.AnimateEvolution(intervalms=300)
+Met.AnimateGradient(intervalms=6000)
+Met.AnimateBoth(intervalms=6000)
 #x.RunUntilConvergence(LifeAndDeath=True)
 #x.Metrics().AnimateEvolution(20)
-x.VisualiseGrid()
+#x.VisualiseGrid()
 
 '''
 #sanity check

@@ -129,24 +129,21 @@ class Metrics: #inherits methods
         return Array
 
 
-    def AnimateEvolution(self, intervalms=250):
+    def AnimateEvolution(self, intervalms=250, plot_now = True):
         #WIP 
         fig, ax = plt.subplots(figsize = (5,5))
         ims = []
 
-        Grid = np.zeros(self.NoAgents)
         for i in range(self.NoIters):
             AgentData = self.ListToArrayMetrics(self.AgentArray[i])
             ColorsOnBoard = self.GetAllColors(AgentData)
             colormap = colors.ListedColormap(ColorsOnBoard)
-            # Dim = int(np.sqrt(len(AgentData)))
-            # AgentData = AgentData.reshape((Dim, Dim))
             im = ax.imshow(AgentData, cmap=colormap, animated = True)
             ims.append([im])
 
         animation = ani.ArtistAnimation(
             fig, ims, interval=intervalms,
-            blit=True,repeat_delay=2000
+            blit=False,repeat_delay=2000
             )
         plt.show()
 
@@ -157,6 +154,9 @@ class Metrics: #inherits methods
         for k in range(3): # find how many RPS at each timestep
             N[k] = np.count_nonzero(AgentData == k-1)
         IterData = [IterAgentData, N] #ADD NEW METRICS TO LIST
+        # if plot_now:
+        #     plt.show()
+        # return fig, ax
 
     def AnimateGradient(self, intervalms=250):
         #WIP 
@@ -167,6 +167,33 @@ class Metrics: #inherits methods
             HorizontalGradient, VerticalGradient = self.GradientArray[i]
             im = ax.quiver(X,Y,HorizontalGradient, VerticalGradient)
             ims.append([im])
+
+        animation = ani.ArtistAnimation(
+            fig, ims, interval=intervalms,
+            blit=False,repeat_delay=2000
+            )
+        plt.show()
+
+
+    def AnimateBoth(self, fig = None, ax = None, intervalms = 250):
+        #WIP 
+        if fig is None:
+            fig, ax = plt.subplots(figsize = (5,5))
+        ims = []
+        X,Y = np.meshgrid(np.arange(0,self.Dimension), np.arange(0,self.Dimension))
+        for i in tqdm(range(self.NoIters)):
+            
+            #vector field
+            HorizontalGradient, VerticalGradient = self.GradientArray[i]
+            im1 = ax.quiver(X,Y,HorizontalGradient, VerticalGradient)
+            #agents
+
+            AgentData = self.ListToArrayMetrics(self.AgentArray[i])
+            ColorsOnBoard = self.GetAllColors(AgentData)
+            colormap = colors.ListedColormap(ColorsOnBoard)
+            im2 = ax.imshow(AgentData, cmap=colormap, animated = True)
+            
+            ims.append([im1, im2])
 
         animation = ani.ArtistAnimation(
             fig, ims, interval=intervalms,

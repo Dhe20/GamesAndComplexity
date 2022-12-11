@@ -177,15 +177,23 @@ class Grid:
 
         ScoreArray = np.reshape(ScoreList, (self.Dimension,self.Dimension)) # to make analysis a little easier
         return ScoreArray
+
     
-    def ComputeGrad(self, Array):
+    def ComputeGrad(self, Array, Mod = False):
         Left = np.roll(Array, 1,axis = 1)
         Right = np.roll(Array, -1, axis = 1)
         Up = np.roll(Array, 1, axis = 0)
         Down = np.roll(Array,-1, axis = 0)
         
+        
         HorizontalGrad = Right-Left
         VerticalGradient = Up-Down
+        if Mod:
+            # HorizontalGrad = (Right-Left)%3
+            # VerticalGradient = (Down-Up)%3
+            HorizontalGrad = (Left-Right)%3
+            VerticalGradient = (Up-Down)%3
+
         #X,Y = np.meshgrid(np.arange(0, self.Dimension),np.arange(0, self.Dimension))
         #plt.quiver(X,Y,HorizontalGrad,VerticalGradient)
         return HorizontalGrad, VerticalGradient
@@ -196,7 +204,7 @@ class Grid:
         Up = np.roll(Array, 1, axis = 0)
         Down = np.roll(Array,-1, axis = 0)
         
-        LaplacianComponent = Right + Left + Up + Down - Array
+        LaplacianComponent = Right + Left + Up + Down - 4 * Array
         X,Y = np.meshgrid(np.arange(0, self.Dimension),np.arange(0, self.Dimension))
         return LaplacianComponent
 
@@ -440,6 +448,17 @@ class Grid:
                     MoveArray[j,i] = 'E'
                     continue
                 MoveArray[j,i] = self.AgentsGrid[j,i].GetMove() #we need vectorisation. surely this can be applied to the elemtns 💀
+        return MoveArray
+
+    def GetMoveArrayNumbers(self):
+        D = self.Dimension
+        MoveArray = np.zeros((D,D), dtype =int)
+        for j in range(D):
+            for i in range(D):
+                if self.AgentsGrid[j,i] is None:
+                    MoveArray[j,i] = None
+                    continue
+                MoveArray[j,i] = self.KeyMapping.get(self.AgentsGrid[j,i].GetMove()) #we need vectorisation. surely this can be applied to the elemtns 💀
         return MoveArray
 
 
