@@ -82,7 +82,7 @@ class Iterator(Grid):
     SaveData = False, KillOrBeKilled = False,
     KillOrBeKilledAndLearn = False, Birth = False,
     Murder = False, LifeAndDeath = False, BProb = None,
-    MProb = None, Winner = False, AppendData = False, ConvergenceBound = None):
+    MProb = None, Winner = False, AppendData = True, ConvergenceBound = None):
 
         if not BProb:
             BProb = 0.25

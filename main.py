@@ -1,5 +1,6 @@
 from Grid import Grid
 from Iterator import Iterator
+# import matplotlib; matplotlib.use("Qt5Agg")
 from Metrics import Metrics
 import matplotlib.pyplot as plt
 import time;
@@ -8,14 +9,12 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 
-3
-x = Iterator(600,1000, Seed= 0)
-x.VisualiseGrid()
-x.Run(LifeAndDeath=True, SaveGrids = True,  BProb = 0.25, MProb = 0.25)
-x.VisualiseGrid()
 
-
-# x.Metrics().AnimateEvolution(50)
+x = Iterator(8,100, Seed= 0)
+x.VisualiseGrid()
+x.Run(LifeAndDeath=True,  BProb = 0.25, MProb = 0.25)
+# x.Metrics().AnimateEvolution(100)
+x.Metrics().PottModelHamiltonian()
 
 # y = Iterator(20, 20, Ternary=False, Seed=0)
 # y.Run(UnoReverse=True)

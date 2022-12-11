@@ -7,6 +7,7 @@ import matplotlib.animation as ani
 import matplotlib.pyplot as plt
 from matplotlib import colors
 from scipy.fft import fft, fftfreq
+from tqdm import tqdm
 
 class Metrics: #inherits methods
         #weird boilerplate to inherit class variables ...
@@ -14,6 +15,7 @@ class Metrics: #inherits methods
 
         if Iterator:
             self.AgentList = AgentList
+            print(self.AgentList)
         else:
             if Filename[-4:] != ".pkl":
                 raise ValueError(".pkl only pls")
@@ -315,6 +317,34 @@ class Metrics: #inherits methods
         plt.plot(Paper, color="Green")
         plt.plot(Scissors, color="Blue")
         plt.show()
+
+
+    def PottModelHamiltonian(self):
+        EnergyList = []
+        D = self.Dimension # for readability
+        for iter in range(self.NoIters):
+            Energy = int(D**2)
+            for i in range(0, D):
+                for j in range(0, D):
+                    if self.Agents[D * j + i] is None:
+                        continue
+                    OppLoc = [  # i <3 modular arithmetic
+                        ((j) % D, (i + 1) % D),
+                        ((j + 1) % D, (i) % D),
+                    ]  # equivalent of a dictionary
+
+                    for k in range(len(OppLoc)):
+                        Energy -= self.CheckSimilar((j, i), OppLoc[k])
+
+            EnergyList.append(Energy)
+        ts = np.arange(0, self.NoIters, 1)
+        plt.plot(ts, EnergyList)
+        plt.show()
+        print(EnergyList)
+
+        return EnergyList
+
+
 
     def GetAllColors(self, AgentData):
         AgentColors = []
