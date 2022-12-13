@@ -41,7 +41,7 @@ class Iterator(Grid):
     KillOrBeKilledAndLearn = False, Birth = False,
     Murder = False, LifeAndDeath = False, UnoReverse = False,
     BProb = None, MProb = None, SaveGrids = False, AppendData = True,
-    AnimateGradient = False, AnimateGradientMod = False):
+    AnimateGradient = False, AnimateGradientMod = False, AnimateLaplace = True):
 
         if not BProb:
             BProb = 0.25
@@ -57,10 +57,15 @@ class Iterator(Grid):
             if AnimateGradient:
                 ScoreArray = self.GetMoveArrayNumbers()
                 HorizontalGradient, VerticalGradient = self.ComputeGrad(ScoreArray, Mod=False)
-                Laplace = self.ComputeGrad(ScoreArray)
                 gradlocalcopy = copy.deepcopy([HorizontalGradient,VerticalGradient])
                 self.AllGradients.append(gradlocalcopy)
-            
+
+            if AnimateLaplace:
+                ScoreArray = self.CheckAllWinners()
+                Laplace = self.ComputeLaplace(ScoreArray)
+                laplocalcopy = copy.deepcopy(Laplace)
+                self.AllGradients.append(laplocalcopy)
+
             if AnimateGradientMod:
                 AgentArray = self.GetMoveArrayNumbers()
                 HorizontalGradient, VerticalGradient = self.ComputeGrad(AgentArray, Mod=True)
@@ -71,8 +76,9 @@ class Iterator(Grid):
                 localcopy = copy.deepcopy(self.Agents)
                 self.AllData.append(localcopy)
         
-
+            
             #i as an argument to add timed decay
+            self.CheckAllWinners()
             self.UpdateAllDists(i, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn)
 
             if Murder:
@@ -83,14 +89,14 @@ class Iterator(Grid):
                 self.LifeAndDeath(BProb = BProb, MProb = MProb)
             if UnoReverse:
                 self.UnoReverseLifeAndDeath()
+            
             self.UpdateAllMoves()
-        
         
 
         if SaveData:
-            if AnimateGradient or AnimateGradientMod:
+            if AnimateGradient or AnimateGradientMod or AnimateLaplace:
                 self.SaveData(self.AllGradients)
-                pass
+                
             else:
                 self.SaveData()
                 pass
@@ -123,6 +129,7 @@ class Iterator(Grid):
             if AppendData:
                 localcopy = copy.deepcopy(self.Agents)
                 self.AllData.append(localcopy)
+
             self.CheckAllWinners()
             self.UpdateAllDists(None, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn)
 

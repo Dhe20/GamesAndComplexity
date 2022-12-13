@@ -10,7 +10,7 @@ from scipy.fft import fft, fftfreq
 from tqdm import tqdm
 class Metrics: #inherits methods
         #weird boilerplate to inherit class variables ...
-    def __init__(self, Filename = "", AgentList = None, Iterator = False, GradientArray = None):
+    def __init__(self, Filename = "", AgentList = None, Iterator = False, GradientArray = None, LapArray = None):
 
         if Iterator:
             self.AgentList = AgentList
@@ -27,7 +27,7 @@ class Metrics: #inherits methods
         self.NoAgents = len(self.AgentArray.T)#take the transpose
         self.Dimension = int(np.sqrt(self.NoAgents))
         self.GradientArray = GradientArray
-
+        self.LapArray = LapArray
         self.KeyMapping = {"R": 0, "P": 1, "S": 2, "E":3}
         self.colorlist = ["red", "green", "blue", "white"]
 
@@ -128,8 +128,24 @@ class Metrics: #inherits methods
         Array = np.array(Array).reshape((self.Dimension,self.Dimension))
         return Array
 
+    '''ANIMATION DATA'''
 
-    def AnimateEvolution(self, intervalms=250, plot_now = True):
+    def SaveAnimation(self, animation,filename, filetype = '.gif'):
+        #imports
+        import datetime
+        import random
+        import string
+        filepath ='pres/' 
+        FilenameData = [filename,
+                        ''.join(random.choice(string.ascii_lowercase) for i in range(4)),
+                        ''.join(datetime.datetime.today().strftime("%m-%d %H-%M"))
+                        ]
+        filetot = filepath+FilenameData[0]+'_'+FilenameData[1]+'_'+FilenameData[-1]+filetype
+        print('saved at,', filetot)
+        animation.save(filetot)#, dpi = 400)
+
+
+    def AnimateEvolution(self, intervalms=250, SaveAni=False):
         #WIP 
         fig, ax = plt.subplots(figsize = (5,5))
         ims = []
@@ -146,9 +162,10 @@ class Metrics: #inherits methods
             blit=False,repeat_delay=2000
             )
         plt.show()
-
-
-        IterAgentData = self.ListToArrayMetrics(self.AgentArray[i])
+        if SaveAni:
+            self.SaveAnimation(animation=animation)
+            
+        IterAgentData = self.ListToArrayMetrics(self.AgentArray[i], filename = 'grid')
         # NEW METRICS GO HERE
         N = np.zeros(3)
         for k in range(3): # find how many RPS at each timestep
@@ -158,7 +175,9 @@ class Metrics: #inherits methods
         #     plt.show()
         # return fig, ax
 
-    def AnimateGradient(self, intervalms=250):
+
+
+    def AnimateGradient(self, intervalms=250, SaveAni = True):
         #WIP 
         fig, ax = plt.subplots(figsize = (5,5))
         ims = []
@@ -168,21 +187,65 @@ class Metrics: #inherits methods
             im = ax.quiver(X,Y,HorizontalGradient, VerticalGradient)
             ims.append([im])
 
+        #fig.colorbar(im, orientation='vertical')
         animation = ani.ArtistAnimation(
             fig, ims, interval=intervalms,
             blit=False,repeat_delay=2000
             )
         plt.show()
+        if SaveAni:
+            self.SaveAnimation(animation=animation, filename='Gradient')
 
 
-    def AnimateBoth(self, fig = None, ax = None, intervalms = 250):
+    def AnimateLaplacian(self, intervalms=250, SaveAni = True):
+        #WIP 
+        fig, ax = plt.subplots(figsize = (5,5))
+        ims = []
+
+        for i in range(self.NoIters):
+            im = ax.imshow(self.LapArray[i], animated = True, cmap='BrBG')
+            ims.append([im])
+        fig.colorbar(im, orientation='vertical')
+        animation = ani.ArtistAnimation(
+            fig, ims, interval=intervalms,
+            blit=False,repeat_delay=2000
+            )
+        if SaveAni:
+            self.SaveAnimation(animation=animation, filename = 'laplacian')
+        plt.show()
+
+    def AnimateEvolAndLap(self, intervalms=250, SaveAni = True):
+        #WIP 
+        fig, ax = plt.subplots(1,2, figsize = (10,5))
+        ims = []
+
+        for i in range(self.NoIters):
+            #lap array
+            im1 = ax[1].imshow(self.LapArray[i], animated = True, cmap='PiYG')
+            #evol array
+            AgentData = self.ListToArrayMetrics(self.AgentArray[i])
+            ColorsOnBoard = self.GetAllColors(AgentData)
+            colormap = colors.ListedColormap(ColorsOnBoard)
+            im2 = ax[0].imshow(AgentData, cmap=colormap, animated = True)
+            ims.append([im1,im2])
+        
+        fig.colorbar(im1, orientation='vertical')
+        animation = ani.ArtistAnimation(
+            fig, ims, interval=intervalms,
+            blit=False,repeat_delay=2000
+            )
+        plt.show()
+        if SaveAni:
+            self.SaveAnimation(animation=animation, filename='EvolAndLap')
+
+    def AnimateBoth(self, fig = None, ax = None, intervalms = 250, SaveAni = True):
         #WIP 
         if fig is None:
             fig, ax = plt.subplots(figsize = (5,5))
         ims = []
         X,Y = np.meshgrid(np.arange(0,self.Dimension), np.arange(0,self.Dimension))
         for i in tqdm(range(self.NoIters)):
-            
+
             #vector field
             HorizontalGradient, VerticalGradient = self.GradientArray[i]
             im1 = ax.quiver(X,Y,HorizontalGradient, VerticalGradient)
@@ -200,6 +263,10 @@ class Metrics: #inherits methods
             blit=False,repeat_delay=2000
             )
         plt.show()
+        if SaveAni:
+            self.SaveAnimation(animation=animation, filename = 'EvolAndGrad')
+
+    '''METRICS OVER TIME'''
 
     def CheckSimilar(self, iter, IndexA, IndexB):
         if self.AgentArray[iter][IndexA] is None or self.AgentArray[iter][IndexB] is None:

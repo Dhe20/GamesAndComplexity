@@ -167,6 +167,10 @@ class Grid:
                     ((j+1)%D, (i)%D),
                     ((j)%D, (i-1)%D),
                     ((j-1)%D, (i)%D),
+                    # ((j+1)%D, (j+1)%D),
+                    # ((j-1)%D, (j-1)%D),
+                    # ((i-1)%D, (i-1)%D),
+                    # ((i+1)%D, (i+1)%D),
                     ] #equivalent of a dictionary
 
                 for k in range(len(OppLoc)):
@@ -198,14 +202,15 @@ class Grid:
         #plt.quiver(X,Y,HorizontalGrad,VerticalGradient)
         return HorizontalGrad, VerticalGradient
 
-    def ComputeLaplaceComponent(self, Array):
+    def ComputeLaplace(self, Array):
+    
         Left = np.roll(Array, 1,axis = 1)
         Right = np.roll(Array, -1, axis = 1)
         Up = np.roll(Array, 1, axis = 0)
         Down = np.roll(Array,-1, axis = 0)
         
         LaplacianComponent = Right + Left + Up + Down - 4 * Array
-        X,Y = np.meshgrid(np.arange(0, self.Dimension),np.arange(0, self.Dimension))
+
         return LaplacianComponent
 
     def CheckAroundAgent(self, index):
