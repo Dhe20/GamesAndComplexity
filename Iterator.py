@@ -62,8 +62,8 @@ class Iterator(Grid):
 
             if AnimateLaplace:
                 ScoreArray = self.CheckAllWinners()
-                Laplace = self.ComputeLaplace(ScoreArray)
-                laplocalcopy = copy.deepcopy(Laplace)
+                #Laplace = self.ComputeLaplace(ScoreArray)
+                laplocalcopy = copy.deepcopy(ScoreArray)    
                 self.AllGradients.append(laplocalcopy)
 
             if AnimateGradientMod:
@@ -123,13 +123,13 @@ class Iterator(Grid):
         for i in tqdm(range(10**6)): #oops
             #check if one of the agents dominates
             Count = self.CountAgents()
-            if self.Dimension**2 in Count:
-                break
             #same method as with Run
             if AppendData:
                 localcopy = copy.deepcopy(self.Agents)
                 self.AllData.append(localcopy)
 
+            if self.Dimension**2 in Count:
+                break
             self.CheckAllWinners()
             self.UpdateAllDists(None, KillOrBeKilled = KillOrBeKilled, KillOrBeKilledAndLearn = KillOrBeKilledAndLearn)
 

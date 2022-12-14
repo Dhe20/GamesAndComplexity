@@ -25,38 +25,71 @@ from tqdm import tqdm
 # # Eval.PlotRPSAmount()
 
 
-x = Iterator(20, 50, Ternary = True, Seed=0)#, EmptyCellCount= 150)
-# # # #x.VisualiseGrid()
-# # # #x.ThreeWideRows()
+x = Iterator(15,100, Seed= 0)
+x.RunUntilConvergence(LifeAndDeath=True, AppendData=True,  BProb = 0.25, MProb = 0.25)
+x.Metrics().AnimateEvolution(intervalms=300, SaveAni = True) 
+# # x.VisualiseGrid()
 # # # #Arr = x.GetMoveArray()
-# x.Run(KillOrBeKilledAndLearn=True, SaveData=False, SaveGrids=False, AppendData=True, AnimateLaplace=False)
-# x.Metrics().AnimateEvolution(intervalms=100, SaveAni = True) 
-# x.Metrics().PlotNormRPSAmount()
+
+#x.Run(KillOrBeKilledAndLearn=True, SaveData=True, SaveGrids=False, AppendData=True, AnimateLaplace=True)
+# x.Metrics().PlotRPSAmount()
 # x.Metrics().PlotPeriodicity()
 # x.Metrics().PlotSimilarity()
 
 
+
 import pickle
 
-pickle_in = open('pklconv/300_50_12-12 10:35_0.pkl', 'rb')
+CaseStudy = False
+EnglishFiftyByFifty = not CaseStudy
+
+if CaseStudy:
+    pickle_in = open('pklconv/20_9_12-13 18:30_0.pkl', 'rb') #lap???
+    LapArray = pickle.load(pickle_in)
+    pickle_in=open('pklconv/20_9_12-13 19:09_0.pkl', 'rb') #just scores
+    ScoreArray = pickle.load(pickle_in)
+    Met = Metrics(
+        Filename='pklconv/20_9_12-13 18:29_0.pkl', 
+        LapArray=LapArray,
+        ScoreArray=ScoreArray
+        )
+    Met.AnimateTheWholeNineYards(intervalms=300, SaveAni=True)
+
+if EnglishFiftyByFifty:
+
+    pickle_in = open('pklconv/300_50_12-12 10:35_0.pkl', 'rb')#laplcian
+    LapArray = pickle.load(pickle_in)
+
+    pickle_in = open('pklconv/300_50_12-13 19:22_0.pkl', 'rb')#scorearray
+    ScoreArray = pickle.load(pickle_in)
+
+
+    Met = Metrics(
+        Filename='pklconv/300_50_12-12 10:37_0.pkl', 
+        LapArray=LapArray,
+        ScoreArray=ScoreArray
+        )
+
+    Met.AnimateTheWholeNineYards(intervalms=300, SaveAni=True)
+
+
 #pickle_in = open('pklconv/300_18_12-12 10:28_0.pkl', 'rb')
-LapArray = pickle.load(pickle_in)
-
-
-Met = Metrics(Filename='pklconv/300_50_12-12 10:37_0.pkl', LapArray=LapArray)
 #Met = Metrics(Filename='pklconv/300_18_12-11 19:34_0.pkl', LapArray=LapArray)
-#Met.AnimateEvolution(intervalms=300)
+#Met.AnimateEvolution(intervalms=300, SaveAni=True)
 #Met.AnimateLaplacian(intervalms=300)
 
 Met.AnimateEvolAndLap(intervalms=300, SaveAni=True)
 #Met.AnimateBoth(intervalms=6000)
-#x.RunUntilConvergence(LifeAndDeath=True)
+#x.RunUntilConvergence(LifeAndDeath=True)#
 #x.Metrics().AnimateEvolution(20)
 #x.VisualiseGrid()
+Met.PlotRPSAmount()
+Met.PlotPeriodicity()
+Met.PlotSimilarity()
 
 
 
-'''
+
 #sanity check
 import numpy as np
 import pickle
@@ -139,4 +172,3 @@ ax.plot(Grids, data1[0], color = 'red')
 ax.set_xlabel('Grid Size')
 ax.set_ylabel('TimeSteps (scaled)')
 plt.show()
-'''

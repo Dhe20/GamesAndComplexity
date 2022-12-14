@@ -8,9 +8,14 @@ import matplotlib.pyplot as plt
 from matplotlib import colors
 from scipy.fft import fft, fftfreq
 from tqdm import tqdm
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 class Metrics: #inherits methods
         #weird boilerplate to inherit class variables ...
-    def __init__(self, Filename = "", AgentList = None, Iterator = False, GradientArray = None, LapArray = None):
+    def __init__(self, 
+    Filename = "", AgentList = None, 
+    Iterator = False, GradientArray = None, 
+    LapArray = None, ScoreArray = None
+    ):
 
         if Iterator:
             self.AgentList = AgentList
@@ -28,6 +33,7 @@ class Metrics: #inherits methods
         self.Dimension = int(np.sqrt(self.NoAgents))
         self.GradientArray = GradientArray
         self.LapArray = LapArray
+        self.ScoreArray = ScoreArray
         self.KeyMapping = {"R": 0, "P": 1, "S": 2, "E":3}
         self.colorlist = ["red", "green", "blue", "white"]
 
@@ -46,8 +52,8 @@ class Metrics: #inherits methods
         return self.NoIters
 
     def PlotRPSAmount(self):
-        fig, ax = plt.subplots(1,1, figsize =(10,6))
-        ax.tick_params(labelsize = 20)
+        fig, ax = plt.subplots(1,1, figsize =(8,5))
+        #ax.tick_params(labelsize = 5)
 
         tsteps = np.linspace(0,self.NoIters, self.NoIters)#is there a better way to do this?
         #need to change this to account for empty cells
@@ -86,6 +92,31 @@ class Metrics: #inherits methods
 
     
 
+    def PlotRPSAmount(self):
+        fig, ax = plt.subplots(1, 1, figsize=(10,6))
+        ax.tick_params(labelsize=20)
+
+        tsteps = np.linspace(0, self.NoIters, self.NoIters)  # is there a better way to do this?
+        # need to change this to account for empty cells
+        N = np.zeros((3, self.NoIters))
+        for j in range(self.NoIters):
+            for i in range(self.NoAgents):
+                if self.AgentArray[j][i] is None:
+                    continue
+                Move = self.AgentArray[j][i].GetMove()
+                N[self.KeyMapping.get(Move)][j] += 1
+
+        ax.plot(tsteps, N[0], color='red', label='Rock')
+        ax.plot(tsteps, N[1], color='green', label='Paper')
+        ax.plot(tsteps, N[2], color='blue', label='Scissors')
+        #ax.plot(tsteps, N[0] + N[1] + N[2], color='black', label='Total')
+        ax.grid()
+        ax.set_ylabel('Agent',fontsize = 20)
+        ax.set_xlabel('Time', fontsize=20)
+        ax.legend(title='', prop={'size': 20})
+        # plt.savefig('.png', dpi = 600)
+        plt.show()
+
     def PlotNormRPSAmount(self):
         fig, ax = plt.subplots(1, 1, figsize=(10, 6))
         ax.tick_params(labelsize=20)
@@ -112,6 +143,7 @@ class Metrics: #inherits methods
         ax.legend(title='', prop={'size': 8})
         # plt.savefig('.png', dpi = 600)
         plt.show()
+
 
     def ListToArrayMetrics(self, AgentIteration):
         Array = []
@@ -149,9 +181,9 @@ class Metrics: #inherits methods
         #WIP 
         fig, ax = plt.subplots(figsize = (5,5))
         ims = []
-
-        for i in range(self.NoIters):
-            AgentData = self.ListToArrayMetrics(self.AgentArray[i])
+        start = self.NoIters-100
+        for i in range(100):
+            AgentData = self.ListToArrayMetrics(self.AgentArray[start+i])
             ColorsOnBoard = self.GetAllColors(AgentData)
             colormap = colors.ListedColormap(ColorsOnBoard)
             im = ax.imshow(AgentData, cmap=colormap, animated = True)
@@ -163,9 +195,9 @@ class Metrics: #inherits methods
             )
         plt.show()
         if SaveAni:
-            self.SaveAnimation(animation=animation)
+            self.SaveAnimation(animation=animation, filename = 'grid')
             
-        IterAgentData = self.ListToArrayMetrics(self.AgentArray[i], filename = 'grid')
+        IterAgentData = self.ListToArrayMetrics(self.AgentArray[i])#, filename = 'grid')
         # NEW METRICS GO HERE
         N = np.zeros(3)
         for k in range(3): # find how many RPS at each timestep
@@ -229,7 +261,9 @@ class Metrics: #inherits methods
             im2 = ax[0].imshow(AgentData, cmap=colormap, animated = True)
             ims.append([im1,im2])
         
-        fig.colorbar(im1, orientation='vertical')
+        fig.suptitle('Three-wide Propagation')
+        cbar = fig.colorbar(im1, orientation='vertical')
+        cbar.set_label('$\\nabla^2\\rho$', rotation = 90)
         animation = ani.ArtistAnimation(
             fig, ims, interval=intervalms,
             blit=False,repeat_delay=2000
@@ -265,6 +299,47 @@ class Metrics: #inherits methods
         plt.show()
         if SaveAni:
             self.SaveAnimation(animation=animation, filename = 'EvolAndGrad')
+
+    def AnimateTheWholeNineYards(self, fig = None, ax = None, intervalms = 250, SaveAni = True):
+        # animates the propagation of the system, the scores, and the laplacian of the scores
+        fig, ax = plt.subplots(1,3, figsize = (22,5))
+
+        ims = []
+        #1 = score, 2 = Lap
+        for i in range(self.NoIters):
+            #lap array
+            im2 = ax[2].imshow(self.LapArray[i], animated = True, cmap='PiYG')
+            tit2 = ax[2].set_title('$\\nabla^2\\rho$', size=12)
+            #score array 
+            im1 = ax[1].imshow(self.ScoreArray[i], animated = True, cmap='PuOr')
+            tit1 = ax[1].set_title('$\\rho$')
+            #evol array
+            AgentData = self.ListToArrayMetrics(self.AgentArray[i])
+            ColorsOnBoard = self.GetAllColors(AgentData)
+            colormap = colors.ListedColormap(ColorsOnBoard)
+            im = ax[0].imshow(AgentData, cmap=colormap, animated = True)
+            ims.append([im,tit1,tit2, im1,im2])
+        
+        # fig.suptitle('Three-wide Propagation')
+        divider = make_axes_locatable(ax[1])
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        cbar = fig.colorbar(im1, orientation='vertical', cax=cax)#, fontsize= 8)
+        cbar.ax.tick_params(labelsize=8)
+        
+        divider = make_axes_locatable(ax[2])
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        cbar = fig.colorbar(im2, orientation='vertical', cax=cax)#, fontsize = 8)
+        cbar.ax.tick_params(labelsize=8)
+
+
+        animation = ani.ArtistAnimation(
+            fig, ims, interval=intervalms,
+            blit=False,repeat_delay=2000
+            )
+        plt.show()
+        if SaveAni:
+            self.SaveAnimation(animation=animation, filename='AniTheWholeNineYards')
+
 
     '''METRICS OVER TIME'''
 
